@@ -1,5 +1,8 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+1.000000   2021/05/25
+           New version number hopefully resolves a versioning problem with PAUSE
+
 0.10.2     2021/05/24
            Added forgotten META.json to distribution.
 
