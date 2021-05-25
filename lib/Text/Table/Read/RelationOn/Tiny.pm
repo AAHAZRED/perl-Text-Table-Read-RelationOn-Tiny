@@ -7,7 +7,7 @@ use autodie;
 
 use Carp qw(confess);
 
-our $VERSION = '0.10.1';
+our $VERSION = '0.10.2';
 
 sub new {
   my $class = shift;
@@ -150,7 +150,7 @@ Text::Table::Read::RelationOn::Tiny - Read binary "relation on (over) a set" fro
 
 =head1 VERSION
 
-Version 0.10.1
+Version 0.10.2
 
 
 =head1 SYNOPSIS

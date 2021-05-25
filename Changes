@@ -1,5 +1,8 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+0.10.2     2021/05/24
+           Added forgotten META.json to distribution.
+
 0.10.1     2021/05/24
            Added info about new github repo
            Use version format m.m.p (major.minor.patch).
