@@ -74,6 +74,20 @@ FOT
 #Don't append a semicolon to the line above!
 
   err_like {$obj->get($tab1)}   qr/Wrong number of elements in table/;
+
+  my $tab2 = <<'FOT';
+    | . | a | b | x |
+    |---+---+---+---|
+    | a |   |   |   |
+    |---+---+---+---|
+    | b |   | X |   |
+    |---+---+---+---|
+    | x |   |   |   |
+    |---+---+---+---|
+FOT
+#Don't append a semicolon to the line above!
+
+  err_like {$obj->get($tab2)}   qr/'x': unknown element in table/;
 }
 
 #--------------------------------------------------------------------------------------------------
