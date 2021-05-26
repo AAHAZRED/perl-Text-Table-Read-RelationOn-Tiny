@@ -23,7 +23,7 @@ sub err_like(&$);
   err_like {RELATION_ON->new(inc => 'x', noinc => 'x')} qr/\binc and noinc must be different/;
 
   err_like {RELATION_ON->new(set => {})}                qr/\bset: must be an array reference/;
-  err_like {RELATION_ON->new(set => [qw( a b c b)])}    qr/\bset: b: duplicate entry/;
+  err_like {RELATION_ON->new(set => [qw( a b c b)])}    qr/\bset: 'b': duplicate entry/;
 
   err_like {RELATION_ON->new(set => [1, undef, 3])}     qr/\bset: entry 1: invalid/;
   err_like {RELATION_ON->new(set => [{}, 2, 3])}        qr/\bset: entry 0: invalid/;
