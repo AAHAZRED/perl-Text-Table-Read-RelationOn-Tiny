@@ -17,8 +17,9 @@ my %WriteMakefileArgs = (
         'Test::More' => '0',
     },
     PREREQ_PM => {
-        'Carp' => '0',
-        'autodie' => 0
+        'version' => '0.77',
+        'autodie' => '0',
+        'Carp'    => '0'
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Text-Table-Read-RelationOn-Tiny-*' },

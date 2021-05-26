@@ -1,6 +1,10 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
-1.000000   2021/05/25
+
+v1.0.1     2021/05/26
+           Switch to modern version string using version 0.77
+
+1.00.00.00 2021/05/25
            New version number hopefully resolves a versioning problem with PAUSE
 
 0.10.2     2021/05/24

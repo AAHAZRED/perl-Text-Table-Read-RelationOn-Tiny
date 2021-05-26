@@ -7,7 +7,10 @@ use autodie;
 
 use Carp qw(confess);
 
-our $VERSION = '1.000000';
+# The following must be on the same line to ensure that $VERSION is read
+# correctly by PAUSE and installer tools. See docu of 'version'.
+use version 0.77; our $VERSION = version->declare("v1.0.1");
+
 
 sub new {
   my $class = shift;
@@ -150,7 +153,7 @@ Text::Table::Read::RelationOn::Tiny - Read binary "relation on (over) a set" fro
 
 =head1 VERSION
 
-Version 1.000000
+Version v1.0.1
 
 
 =head1 SYNOPSIS
