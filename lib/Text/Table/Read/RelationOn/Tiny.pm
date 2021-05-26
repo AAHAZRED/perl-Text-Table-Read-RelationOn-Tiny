@@ -33,7 +33,7 @@ sub new {
     for (my $i = 0; $i < @set_copy; ++$i) {
       my $entry = $set_copy[$i];
       confess("set: entry $i: invalid") if !defined($entry) || ref($entry);
-      confess("set: $entry: duplicate entry") if exists($ids{$entry});
+      confess("set: '$entry': duplicate entry") if exists($ids{$entry});
       $ids{$entry} = $i;
     }
     @{$self}{qw(prespec elems elem_ids)} = (1, \@set_copy, \%ids);
