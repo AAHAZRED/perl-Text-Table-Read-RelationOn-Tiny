@@ -1,5 +1,8 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+v1.0.3     2021/05/28
+           Improved error messages and fixed problem in error case test script.
+
 v1.0.2     2021/05/26
            Consequently use quotes in error messages
 

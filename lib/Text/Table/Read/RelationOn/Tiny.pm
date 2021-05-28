@@ -9,7 +9,7 @@ use Carp qw(confess);
 
 # The following must be on the same line to ensure that $VERSION is read
 # correctly by PAUSE and installer tools. See docu of 'version'.
-use version 0.77; our $VERSION = version->declare("v1.0.2");
+use version 0.77; our $VERSION = version->declare("v1.0.3");
 
 
 sub new {
@@ -108,12 +108,12 @@ sub get {
   return wantarray ? @{$self}{qw(matrix elems elem_ids)} : $self;
 }
 
-sub inc      {confess("Unexpected arguments") if @_ > 1; $_[0]->{inc};}
-sub noinc    {confess("Unexpected arguments") if @_ > 1; $_[0]->{noinc};}
-sub matrix   {confess("Unexpected arguments") if @_ > 1; $_[0]->{matrix};}
-sub elems    {confess("Unexpected arguments") if @_ > 1; $_[0]->{elems};}
-sub elem_ids {confess("Unexpected arguments") if @_ > 1; $_[0]->{elem_ids};}
-sub prespec  {confess("Unexpected arguments") if @_ > 1; $_[0]->{prespec};}
+sub inc      {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{inc};}
+sub noinc    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
+sub matrix   {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{matrix};}
+sub elems    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
+sub elem_ids {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
+sub prespec  {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
 
 
 sub _get_elems_from_header {
@@ -153,7 +153,7 @@ Text::Table::Read::RelationOn::Tiny - Read binary "relation on (over) a set" fro
 
 =head1 VERSION
 
-Version v1.0.2
+Version v1.0.3
 
 
 =head1 SYNOPSIS

@@ -36,11 +36,12 @@ sub err_like(&$);
   err_like {$obj->get({})}   qr/Invalid argument/;
 
   note("Accessor args");
-  err_like {$obj->inc(1)}       qr/Unexpected arguments/;
-  err_like {$obj->noinc(1)}     qr/Unexpected arguments/;
-  err_like {$obj->matrix(1)}    qr/Unexpected arguments/;
-  err_like {$obj->elems(1)}     qr/Unexpected arguments/;
-  err_like {$obj->elem_ids(1)}  qr/Unexpected arguments/;
+  err_like {$obj->inc(1)}       qr/Unexpected argument\(s\)/;
+  err_like {$obj->noinc(1)}     qr/Unexpected argument\(s\)/;
+  err_like {$obj->matrix(1)}    qr/Unexpected argument\(s\)/;
+  err_like {$obj->elems(1)}     qr/Unexpected argument\(s\)/;
+  err_like {$obj->elem_ids(1)}  qr/Unexpected argument\(s\)/;
+  err_like {$obj->prespec(1)}   qr/Unexpected argument\(s\)/;
 }
 
 {
@@ -102,7 +103,8 @@ sub err_like(&$) {
   local $Test::Builder::Level = $Test::Builder::Level + 1;
   eval {$sub->()};
   if ($@) {
-    like($@, $re, "Error message ok");
+    (my $err = $@) =~ s/\n.*//s;  ## Important: cut off stacktrace
+    like($err, $re, "Error message ok");
   } else {
     fail("Coded did not produce error");
     return "";
