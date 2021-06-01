@@ -37,6 +37,7 @@ sub new {
       $ids{$entry} = $i;
     }
     @{$self}{qw(prespec elems elem_ids)} = (1, \@set_copy, \%ids);
+    $self->{n_elems} = @set_copy;
   } elsif (defined($set)) {
     confess("set: must be an array reference");
   } else {
@@ -73,6 +74,7 @@ sub get {
   } else {
     @{$self}{qw(elems elem_ids)} = ($elem_array, $elem_ids);
     $elem_ids_o = $elem_ids;
+    $self->{n_elems} = @{$elem_array};
   }
   my %remaining_elements = map {$_ => undef} @{$elem_array};
   my ($inc, $noinc) = @{$self}{qw(inc noinc)};
@@ -114,6 +116,7 @@ sub matrix   {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{matrix};}
 sub elems    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
 sub elem_ids {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
 sub prespec  {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
+sub n_elems  {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{n_elems};}
 
 
 sub _get_elems_from_header {

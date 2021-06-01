@@ -1,7 +1,7 @@
 use 5.010_001;
 use strict;
 use warnings;
-use Test::More tests => 9;
+use Test::More;
 
 use Text::Table::Read::RelationOn::Tiny;
 
@@ -16,5 +16,10 @@ ok(Text::Table::Read::RelationOn::Tiny->can('matrix'),   'matrix() exists');
 ok(Text::Table::Read::RelationOn::Tiny->can('elems'),    'elems() exists');
 ok(Text::Table::Read::RelationOn::Tiny->can('elem_ids'), 'elem_ids() exists');
 ok(Text::Table::Read::RelationOn::Tiny->can('prespec'),  'prespec() exists');
+ok(Text::Table::Read::RelationOn::Tiny->can('n_elems'),  'n_elems() exists');
+
+
+#==================================================================================================
+done_testing();
 
 

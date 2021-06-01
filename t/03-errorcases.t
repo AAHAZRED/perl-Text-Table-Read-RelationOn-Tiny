@@ -42,6 +42,7 @@ sub err_like(&$);
   err_like {$obj->elems(1)}     qr/Unexpected argument\(s\)/;
   err_like {$obj->elem_ids(1)}  qr/Unexpected argument\(s\)/;
   err_like {$obj->prespec(1)}   qr/Unexpected argument\(s\)/;
+  err_like {$obj->n_elems(1)}   qr/Unexpected argument\(s\)/;
 }
 
 {
