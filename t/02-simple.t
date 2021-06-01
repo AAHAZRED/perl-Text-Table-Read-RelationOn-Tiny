@@ -26,13 +26,18 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
 
   ok(!$obj->prespec, "prespec() returns false");
 
+  is($obj->n_elems, undef, "n_elems()");
+
   {
     note('Empty input (array)');
     is($obj->get([]), $obj, 'get() returns object in scalar context');
     is_deeply($obj->matrix,   {}, 'matrix(): empty hash');
     is_deeply($obj->elems,    [], 'elems(): empty array');
     is_deeply($obj->elem_ids, {}, 'elem_ids(): empty hash');
+
+    is($obj->n_elems,  0,  'n_elems(): empty set');
   }
+
   {
     note('Empty input (file)');
     is($obj->get(catfile(TEST_DIR, '002-empty.txt')),
@@ -40,6 +45,8 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
     is_deeply($obj->matrix,   {}, 'matrix(): empty hash');
     is_deeply($obj->elems,    [], 'elems(): empty array');
     is_deeply($obj->elem_ids, {}, 'elem_ids(): empty hash');
+
+    is($obj->n_elems,  0,  'n_elems(): empty set');
   }
   {
     note('Empty input (string): spaces only');
@@ -52,6 +59,8 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
     is_deeply($matrix,   {}, 'matrix(): empty array');
     is_deeply($elems,    [], 'elems(): empty hash');
     is_deeply($elem_ids, {}, 'elem_ids(): empty hash');
+
+    is($obj->n_elems,  0,  'n_elems(): empty set');
   }
   {
     note('Empty input (file): white spaces only');
@@ -64,6 +73,8 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
     is_deeply($matrix,   {}, 'matrix(): empty array');
     is_deeply($elems,    [], 'elems(): empty hash');
     is_deeply($elem_ids, {}, 'elem_ids(): empty hash');
+
+    is($obj->n_elems,  0,  'n_elems(): empty set');
   }
 
   is($obj->get("\n"), $obj, 'get() returns object in scalar context');
@@ -82,6 +93,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   is($obj->matrix,   undef, 'matrix()');
   is($obj->elems,    undef, 'elems()');
   is($obj->elem_ids, undef, 'elem_ids()');
+  is($obj->n_elems,  undef,  'n_elems()');
 
   {
     note("Single element input / non empty relation");
@@ -102,6 +114,8 @@ EOT
     is_deeply($matrix,   {0 => {0 => undef}}, 'matrix()');
     is_deeply($elems,    ['Foo'],             'elems()');
     is_deeply($elem_ids, {Foo => 0},          'elem_ids()');
+
+    is($obj->n_elems, 1, 'n_elems()');
   }
   {
     note("Single element input / empty relation");
@@ -123,6 +137,8 @@ EOT
     is_deeply($elems,    ['Foo'],    'elems()');
     is_deeply($elem_ids, {Foo => 0}, 'elem_ids()');
 
+    is($obj->n_elems, 1, 'n_elems()');
+
     note("Same, but empty name");
     $input = <<'EOT';
       | *   |     |
@@ -134,6 +150,7 @@ EOT
 
     is_deeply([$obj->get($input)], [{0 => {0 => undef}}, [''], {'' => 0}],
               "Result for one-element set with empty element namee");
+    is($obj->n_elems, 1, 'n_elems()');
   }
 }
 
@@ -192,6 +209,7 @@ EOT
               'Return values of get(ARRAY) in list context'
              );
     is_deeply(\@input_array, \@input_array_bak, "Input array not changed");
+    is($obj->n_elems, 4, 'n_elems()');
   }
   {
     note("Same input, but from file + rows and columns reordered");
@@ -220,12 +238,14 @@ EOT
     is_deeply($obj->matrix,   $expected{matrix},   'matrix()');
     is_deeply($obj->elems,    $expected{elems},    'elems()');
     is_deeply($obj->elem_ids, $expected{elem_ids}, 'elem_ids()');
+    is($obj->n_elems, 4, 'n_elems()');
 
     note("Same input, but with 'weird' use of horitontal rules");
     $obj->get(catfile(TEST_DIR, '02-table-weird.txt'));
     is_deeply($obj->matrix,   $expected{matrix},   'matrix()');
     is_deeply($obj->elems,    $expected{elems},    'elems()');
     is_deeply($obj->elem_ids, $expected{elem_ids}, 'elem_ids()');
+    is($obj->n_elems, 4, 'n_elems()');
   }
 }
 
