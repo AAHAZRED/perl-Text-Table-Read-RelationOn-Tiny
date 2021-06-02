@@ -45,8 +45,9 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
 
   ok($obj->prespec, "prespec() returns true");
 
-  is_deeply($obj->elems,    \@set_array,   "elems()");
-  is_deeply($obj->elem_ids, \%expected_ids, "elem_ids()");
+  is_deeply($obj->elems,      \@set_array,    "elems()");
+  is_deeply($obj->elem_ids,   \%expected_ids, "elem_ids()");
+  is_deeply($obj->x_elem_ids, \%expected_ids, "x_elem_ids()");
 
   {
     note("Same order of elements");
@@ -73,8 +74,9 @@ EOT
 
     is($input, $input_bak, "Input string not changed");
 
-    is_deeply($obj->elems,    \@set_array,    "elems() unchanged");
-    is_deeply($obj->elem_ids, \%expected_ids, "elem_ids() unchanged");
+    is_deeply($obj->elems,      \@set_array,    "elems() unchanged");
+    is_deeply($obj->elem_ids,   \%expected_ids, "elem_ids() unchanged");
+    is_deeply($obj->x_elem_ids, \%expected_ids, "x_elem_ids()");
     ok($obj->prespec, "prespec() still returns true");
   }
 
@@ -105,8 +107,9 @@ EOT
 
     is($input, $input_bak, "Input string not changed");
 
-    is_deeply($obj->elems,    \@set_array,    "elems() unchanged");
-    is_deeply($obj->elem_ids, \%expected_ids, "elem_ids() unchanged");
+    is_deeply($obj->elems,      \@set_array,    "elems() unchanged");
+    is_deeply($obj->elem_ids,   \%expected_ids, "elem_ids() unchanged");
+    is_deeply($obj->x_elem_ids, \%expected_ids, "x_elem_ids()");
   }
 }
 

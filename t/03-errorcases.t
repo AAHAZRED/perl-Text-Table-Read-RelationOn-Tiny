@@ -19,10 +19,26 @@ sub err_like(&$);
   err_like {RELATION_ON->new(inc => 'x', noinc => 'x')} qr/\binc and noinc must be different/;
 
   err_like {RELATION_ON->new(set => {})}                qr/\bset: must be an array reference/;
-  err_like {RELATION_ON->new(set => [qw( a b c b)])}    qr/\bset: 'b': duplicate entry/;
 
   err_like {RELATION_ON->new(set => [1, undef, 3])}     qr/\bset: entry 1: invalid/;
   err_like {RELATION_ON->new(set => [{}, 2, 3])}        qr/\bset: entry 0: invalid/;
+
+  err_like {RELATION_ON->new(set => [1, [{}, 27, 42], 3])}
+    qr/\bset: subentry must be a defined scalar/;
+
+  err_like {RELATION_ON->new(set => [1, [27, {}, 42], 3])}
+    qr/\bset: subentry must be a defined scalar/;
+
+  err_like {RELATION_ON->new(set => [1, [], 3])}
+    qr/\bset: entry 1: array entry must not be empty/;
+#
+  err_like {RELATION_ON->new(set => [1, [2, 4, 5], [4, 3]])}
+    qr/\bset: '4': duplicate element/;
+
+  err_like {RELATION_ON->new(set => [1, [2, 4, 5], [3, 4]])}
+    qr/\bset: '4': duplicate element/;
+
+  err_like {RELATION_ON->new(set => [qw(a b c b)])}     qr/\bset: 'b': duplicate entry/;
 }
 
 {
@@ -32,13 +48,14 @@ sub err_like(&$);
   err_like {$obj->get({})}   qr/Invalid argument/;
 
   note("Accessor args");
-  err_like {$obj->inc(1)}       qr/Unexpected argument\(s\)/;
-  err_like {$obj->noinc(1)}     qr/Unexpected argument\(s\)/;
-  err_like {$obj->matrix(1)}    qr/Unexpected argument\(s\)/;
-  err_like {$obj->elems(1)}     qr/Unexpected argument\(s\)/;
-  err_like {$obj->elem_ids(1)}  qr/Unexpected argument\(s\)/;
-  err_like {$obj->prespec(1)}   qr/Unexpected argument\(s\)/;
-  err_like {$obj->n_elems(1)}   qr/Unexpected argument\(s\)/;
+  err_like {$obj->inc(1)}        qr/Unexpected argument\(s\)/;
+  err_like {$obj->noinc(1)}      qr/Unexpected argument\(s\)/;
+  err_like {$obj->matrix(1)}     qr/Unexpected argument\(s\)/;
+  err_like {$obj->elems(1)}      qr/Unexpected argument\(s\)/;
+  err_like {$obj->elem_ids(1)}   qr/Unexpected argument\(s\)/;
+  err_like {$obj->x_elem_ids(1)} qr/Unexpected argument\(s\)/;
+  err_like {$obj->prespec(1)}    qr/Unexpected argument\(s\)/;
+  err_like {$obj->n_elems(1)}    qr/Unexpected argument\(s\)/;
 }
 
 {
