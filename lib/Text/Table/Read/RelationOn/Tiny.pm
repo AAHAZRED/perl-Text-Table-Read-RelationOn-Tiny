@@ -65,7 +65,7 @@ sub get {
   my ($elem_array, $elem_ids) = _get_elems_from_header(\@lines);
   my $elem_ids_o;
   if ($self->{prespec}) {
-    confess("Wrong number of elements in table") if @{$elem_array} != @{$self->{elems}};
+    confess("Wrong number of elements in table") if @{$elem_array} != $self->{n_elems};
     my $predef_elem_ids = $self->{elem_ids};
     foreach my $elem (@{$elem_array}) {
       confess("'$elem': unknown element in table") if !exists($predef_elem_ids->{$elem});
