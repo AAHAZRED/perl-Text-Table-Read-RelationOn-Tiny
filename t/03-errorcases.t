@@ -2,10 +2,6 @@ use 5.010_001;
 use strict;
 use warnings;
 
-#use File::Basename;
-#use File::Spec::Functions;
-
-
 use Test::More;
 
 use Text::Table::Read::RelationOn::Tiny;
