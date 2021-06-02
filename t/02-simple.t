@@ -20,9 +20,10 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   is($obj->inc,   'X', 'inc() - default');
   is($obj->noinc, '',  'noinc() - default');
 
-  is($obj->matrix,   undef, 'matrix()');
-  is($obj->elems,    undef, 'elems()');
-  is($obj->elem_ids, undef, 'elem_ids()');
+  is($obj->matrix,     undef, 'matrix()');
+  is($obj->elems,      undef, 'elems()');
+  is($obj->elem_ids,   undef, 'elem_ids()');
+  is($obj->x_elem_ids, undef, 'elem_ids()');
 
   ok(!$obj->prespec, "prespec() returns false");
 

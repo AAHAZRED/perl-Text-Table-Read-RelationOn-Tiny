@@ -28,16 +28,39 @@ sub new {
               noinc  => $noinc,
              };
   if (ref($set) eq 'ARRAY') {
-    my %ids;
+    my @elems;                         # elems
+    my %h;                             # id => array of higher equivalent indices
+    my %ids;                           # indices in basic elems
+    my %eIds;                          # indices in @elems (elems)
     my @set_copy = @{$set};
+    $self->{n_elems} = my $cnt = @set_copy;
     for (my $i = 0; $i < @set_copy; ++$i) {
       my $entry = $set_copy[$i];
-      confess("set: entry $i: invalid") if !defined($entry) || ref($entry);
-      confess("set: '$entry': duplicate entry") if exists($ids{$entry});
-      $ids{$entry} = $i;
+      confess("set: entry $i: invalid") if !defined($entry);
+      if (ref($entry)) {
+        confess("set: entry $i: invalid") if ref($entry) ne 'ARRAY';
+        confess("set: entry $i: array entry must not be empty") if !@{$entry};
+        my $entry_0 = $entry->[0];
+        confess("set: subentry must be a defined scalar") if ref($entry_0) || !defined($entry_0);
+        $elems[$i] = $entry_0;
+        confess("set: '$entry_0': duplicate element") if exists($ids{$entry_0});
+        $ids{$entry_0} = $eIds{$entry_0} = $i;
+        for (my $j = 1; $j < @$entry; ++$j) {
+          my $entry_j = $entry->[$j];
+          confess("set: '$entry_j': duplicate element") if exists($ids{$entry_j});
+          confess("set: subentry must be a defined scalar") if ref($entry_j) || !defined($entry_j);
+          push(@{$h{$i}}, $cnt);
+          $eIds{$entry_j} = $cnt;
+          $ids{$entry_j}  = $i;
+          $elems[$cnt++] = $entry_j;
+        }
+      } else {
+        confess("set: '$entry': duplicate entry") if exists($ids{$entry});
+        $elems[$i] = $entry;
+        $ids{$entry} = $eIds{$entry} = $i;
+      }
     }
-    @{$self}{qw(prespec elems elem_ids)} = (1, \@set_copy, \%ids);
-    $self->{n_elems} = @set_copy;
+    @{$self}{qw(prespec elems elem_ids x_elem_ids)} = (1, \@elems, \%ids, \%eIds);
   } elsif (defined($set)) {
     confess("set: must be an array reference");
   } else {
@@ -110,13 +133,14 @@ sub get {
   return wantarray ? @{$self}{qw(matrix elems elem_ids)} : $self;
 }
 
-sub inc      {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{inc};}
-sub noinc    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
-sub matrix   {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{matrix};}
-sub elems    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
-sub elem_ids {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
-sub prespec  {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
-sub n_elems  {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{n_elems};}
+sub inc         {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{inc};}
+sub noinc       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
+sub matrix      {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{matrix};}
+sub elems       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
+sub elem_ids    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
+sub x_elem_ids  {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{x_elem_ids};}
+sub prespec     {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
+sub n_elems     {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{n_elems};}
 
 
 sub _get_elems_from_header {
@@ -411,10 +435,20 @@ nor specified option C<set> when calling the constructor. See description of
 C<get> and C<new>.
 
 
+=head3 C<x_elem_ids>
+
+TODO
+
 =head3 C<prespec>
 
 Returns 1 (true) if you specified argument C<set> when calling the
 constructor, otherwise it returns an empty string (false).
+
+
+=head3 C<n_elems>
+
+TODO
+
 
 
 =head1 AUTHOR
