@@ -32,7 +32,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
                          1 => undef
                         }
                   },
-                  ['this', 'that', 'foo bar', 'empty'],
+                  [@set_array],
                   {
                    'this'    => 0,
                    'that'    => 1,
@@ -48,6 +48,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   is_deeply($obj->elems,      \@set_array,    "elems()");
   is_deeply($obj->elem_ids,   \%expected_ids, "elem_ids()");
   is_deeply($obj->x_elem_ids, \%expected_ids, "x_elem_ids()");
+  is($obj->n_elems, 4, "n_elems()");
 
   {
     note("Same order of elements");
@@ -77,6 +78,7 @@ EOT
     is_deeply($obj->elems,      \@set_array,    "elems() unchanged");
     is_deeply($obj->elem_ids,   \%expected_ids, "elem_ids() unchanged");
     is_deeply($obj->x_elem_ids, \%expected_ids, "x_elem_ids()");
+    is($obj->n_elems, 4, "n_elems()");
     ok($obj->prespec, "prespec() still returns true");
   }
 
@@ -110,6 +112,7 @@ EOT
     is_deeply($obj->elems,      \@set_array,    "elems() unchanged");
     is_deeply($obj->elem_ids,   \%expected_ids, "elem_ids() unchanged");
     is_deeply($obj->x_elem_ids, \%expected_ids, "x_elem_ids()");
+    is($obj->n_elems, 4, "n_elems()");
   }
 }
 

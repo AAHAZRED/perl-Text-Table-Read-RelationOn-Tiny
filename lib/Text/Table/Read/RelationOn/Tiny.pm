@@ -29,7 +29,7 @@ sub new {
              };
   if (ref($set) eq 'ARRAY') {
     my @elems;                         # elems
-    my %h;                             # id => array of higher equivalent indices
+    my %hiIds;                         # id => array of higher equivalent indices
     my %ids;                           # indices in basic elems
     my %eIds;                          # indices in @elems (elems)
     my @set_copy = @{$set};
@@ -49,7 +49,7 @@ sub new {
           my $entry_j = $entry->[$j];
           confess("set: '$entry_j': duplicate element") if exists($ids{$entry_j});
           confess("set: subentry must be a defined scalar") if ref($entry_j) || !defined($entry_j);
-          push(@{$h{$i}}, $cnt);
+          push(@{$hiIds{$i}}, $cnt);
           $eIds{$entry_j} = $cnt;
           $ids{$entry_j}  = $i;
           $elems[$cnt++] = $entry_j;
@@ -60,7 +60,7 @@ sub new {
         $ids{$entry} = $eIds{$entry} = $i;
       }
     }
-    @{$self}{qw(prespec elems elem_ids x_elem_ids)} = (1, \@elems, \%ids, \%eIds);
+    @{$self}{qw(prespec elems elem_ids x_elem_ids hi_ids)} = (1, \@elems, \%ids, \%eIds, \%hiIds);
   } elsif (defined($set)) {
     confess("set: must be an array reference");
   } else {
@@ -86,7 +86,7 @@ sub get {
   }
 
   my ($elem_array, $elem_ids) = _get_elems_from_header(\@lines);
-  my $elem_ids_o;
+  my ($elem_ids_o, $hi_ids);
   if ($self->{prespec}) {
     confess("Wrong number of elements in table") if @{$elem_array} != $self->{n_elems};
     my $predef_elem_ids = $self->{elem_ids};
@@ -94,10 +94,12 @@ sub get {
       confess("'$elem': unknown element in table") if !exists($predef_elem_ids->{$elem});
     }
     $elem_ids_o = $predef_elem_ids;
+    $hi_ids = $self->{hi_ids};
   } else {
     @{$self}{qw(elems elem_ids)} = ($elem_array, $elem_ids);
     $elem_ids_o = $elem_ids;
     $self->{n_elems} = @{$elem_array};
+    $hi_ids = {};
   }
   my %remaining_elements = map {$_ => undef} @{$elem_array};
   my ($inc, $noinc) = @{$self}{qw(inc noinc)};
@@ -118,13 +120,27 @@ sub get {
     my $index = 0;
     foreach my $entry (split(/\s*\|\s*/, $line, -1)) {
       if ($entry eq $inc) {
-        $new_row{$elem_ids_o->{$elem_array->[$index]}} = undef;
+        my $e_id = $elem_ids_o->{$elem_array->[$index]};
+        $new_row{$e_id} = undef;
+        if (exists($hi_ids->{$e_id})) {
+          foreach my $hi_id (@{$hi_ids->{$e_id}}) {
+            $new_row{$hi_id} = undef;
+          }
+        }
       } elsif ($entry ne $noinc) {
         confess("'$entry': unexpected entry");
       }
       $index++;
     }
-    $matrix{$elem_ids_o->{$element}} = \%new_row if %new_row;
+    if (%new_row) {
+      my $e_id = $elem_ids_o->{$element};
+      $matrix{$e_id} = \%new_row;
+      if (exists($hi_ids->{$e_id})) {
+        foreach my $hi_id (@{$hi_ids->{$e_id}}) {
+          $matrix{$hi_id} = {%new_row};
+        }
+      }
+    }
   }
   confess(join(', ', map("'$_'", sort(keys(%remaining_elements)))) . ": no rows for this elements")
     if %remaining_elements;
@@ -132,6 +148,7 @@ sub get {
   $self->{matrix}   = \%matrix;
   return wantarray ? @{$self}{qw(matrix elems elem_ids)} : $self;
 }
+
 
 sub inc         {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{inc};}
 sub noinc       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
@@ -290,6 +307,39 @@ always refere to the indices in the C<set> array, and C<elems> and C<elem_ids>
 will always return the same, regardless of the order of rows and columns in
 the input table.
 
+It may happen that there are elements that are identical with respect to the
+relation and you do not want to write duplicate rows and columns in your
+table. To cover such a case, it is allowed that entries of C<set> are array
+references again.
+
+Example:
+
+  [[qw(a a1 a2 a3)], 'b', [qw(c c1)], 'd']
+
+In this case, the elements you write in your table are C<a>, C<b>, C<c>, and
+C<d> (in case of a subarray always the first element is taken). Method C<get>
+will add corresponding rows and columns for C<a1>, C<a2>, C<a3>, and C<c1> to
+the incidence matrix. Method C<elems> will return this (note the order of the
+elements):
+
+  [a b c d a1 a2 a3 c1]
+
+and method C<n_elems> will return 4. Method C<elem_ids> will return:
+
+  { a => 0, a1 => 0, a2 => 0, a3 => 0,
+    b => 1,
+    c => 2, c1 => 2,
+    d => 3
+  }
+
+mapping duplicates to the same index, while C<x_elem_ids> will return:
+
+  { a  => 0, a1 => 4, a2 => 5, a3 => 6,
+    b  => 1,
+    c  => 2, c1 => 7,
+    d  => 3
+  }
+
 
 =back
 
@@ -429,25 +479,41 @@ C<get> and C<new>.
 
 =head3 C<elem_ids>
 
-Returns a reference to the hash element ids (indices in array returned by
-C<elems>), or C<undef> if you did neither call C<get> for the current object
-nor specified option C<set> when calling the constructor. See description of
-C<get> and C<new>.
+Returns a reference to a hash mapping elements to ids (indices in array
+returned by C<elems>), or C<undef> if you did neither call C<get> for the
+current object nor specified argument C<set> when calling the constructor. If
+you used constructor argument C<set> to specify duplicates, then the
+duplicates are mapped to the same index (especially each index is smaller than
+the return value of C<n_elems>). See description of C<get> and C<new>.
 
 
 =head3 C<x_elem_ids>
 
-TODO
+If constructor argument C<set> was not specified, then this method returns
+C<undef>. Otherwise, it returns a reference to a hash mapping each element to
+its index in the array returned by C<elems>. In case of duplicates, such an
+index may be equal or greater than the return value of C<n_elems>.
+
+
 
 =head3 C<prespec>
 
-Returns 1 (true) if you specified argument C<set> when calling the
+Returns 1 (true) if you specified constructor argument C<set> when calling the
 constructor, otherwise it returns an empty string (false).
 
 
 =head3 C<n_elems>
 
-TODO
+Returns the number of elements in table: If constructor argument C<set> was
+specified, then this is the number of elements in the corresponding
+set. Otherwise, C<n_elems> returns C<undef> before C<get> has been called,
+after the first call of C<get>, it returns the number of elements of the set
+taken from the table.
+
+C<Note>: If constructor argument C<set> was specified and some entries in the
+corresponding array were array references again, then C<n_elems> needs not to
+be equal to the number of entries in the array returned by
+C<elems>. Typically, C<n_elems> will be smaller in such a case.
 
 
 
