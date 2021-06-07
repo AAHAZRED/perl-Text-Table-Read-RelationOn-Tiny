@@ -1,5 +1,8 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+v1.1.0     2021/06/07
+           Implemented new feature (duplicates)
+
 v1.0.3     2021/05/28
            Improved error messages and fixed problem in error case test script.
 
