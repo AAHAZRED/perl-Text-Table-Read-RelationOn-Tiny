@@ -211,6 +211,12 @@ EOT
              );
     is_deeply(\@input_array, \@input_array_bak, "Input array not changed");
     is($obj->n_elems, 4, 'n_elems()');
+    my $org_matrix = $obj->matrix;
+    my $matrix     = $obj->bless_matrix;
+    is($matrix, $org_matrix, "bless_matrix() does not change matrix");
+    isa_ok($matrix, 'Text::Table::Read::RelationOn::Tiny::_Relation_Matrix', '$matrix');
+    ok($matrix->related(0, 2), "related(0, 2)");
+    ok(!$matrix->related(1, 0), "NOT related(1, 0)");
   }
   {
     note("Same input, but from file + rows and columns reordered");

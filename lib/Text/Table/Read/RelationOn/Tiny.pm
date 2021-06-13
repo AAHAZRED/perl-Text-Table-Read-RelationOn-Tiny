@@ -9,7 +9,7 @@ use Carp qw(confess);
 
 # The following must be on the same line to ensure that $VERSION is read
 # correctly by PAUSE and installer tools. See docu of 'version'.
-use version 0.77; our $VERSION = version->declare("v1.1.1");
+use version 0.77; our $VERSION = version->declare("v1.2.0");
 
 
 sub new {
@@ -159,6 +159,9 @@ sub x_elem_ids  {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{x_elem_ids
 sub prespec     {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
 sub n_elems     {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{n_elems};}
 
+sub bless_matrix {
+  return bless($_[0]->{matrix}, "Text::Table::Read::RelationOn::Tiny::_Relation_Matrix");
+}
 
 sub _get_elems_from_header {
   my $lines = shift;
@@ -177,6 +180,12 @@ sub _get_elems_from_header {
   return (\@elem_array, \%elem_ids);
 }
 
+
+{
+  package Text::Table::Read::RelationOn::Tiny::_Relation_Matrix;
+
+  sub related { return exists($_[0]->{$_[1]}) && exists($_[0]->{$_[1]}->{$_[2]}); }
+}
 
 
 1; # End of Text::Table::Read::RelationOn::Tiny
@@ -197,7 +206,7 @@ Text::Table::Read::RelationOn::Tiny - Read binary "relation on (over) a set" fro
 
 =head1 VERSION
 
-Version v1.1.1
+Version v1.2.0
 
 
 =head1 SYNOPSIS
@@ -515,6 +524,30 @@ corresponding array were array references again, then C<n_elems> needs not to
 be equal to the number of entries in the array returned by
 C<elems>. Typically, C<n_elems> will be smaller in such a case.
 
+
+=head3 C<bless_matrix>
+
+Blesses C<matrix> with
+C<Text::Table::Read::RelationOn::Tiny::_Relation_Matrix> and for convenience
+also returns it. Then you can use C<matrix> as an object having exactly one
+method named C<related>. This method again takes two arguments (integers) and
+check if these are related with respect to the incidence C<matrix>. Note that
+c<related> does not do any parameter check.
+
+Example:
+
+  $rel_obj->bless_matrix;
+  my $matrix = $rel_obj->matrix;
+  if ($matrix->related(2, 5)) {
+    # ...
+  }
+
+or shorter:
+
+  my $matrix = $rel_obj->bless_matrix;
+  if ($matrix->related(2, 5)) {
+    # ...
+  }
 
 
 =head1 AUTHOR
