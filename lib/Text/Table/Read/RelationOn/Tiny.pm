@@ -72,23 +72,25 @@ sub new {
 
 sub get {
   my $self = shift;
-  confess("Wrong number of arguments") if @_ != 1;
+  confess("Odd number of arguments") if @_ % 2;
+  my ($src, $allow_subset) = @{{@_}}{qw(src allow_subset)};
   my @lines;
-  if (ref($_[0])) {
-    confess("Invalid argument") if ref($_[0]) ne 'ARRAY';
-    @lines = @{$_[0]};
-  } elsif ($_[0] !~ /\n/) {
-    open(my $h, '<', $_[0]);
+  if (ref($src)) {
+    confess("Invalid value argument for 'src'") if ref($src) ne 'ARRAY';
+    @lines = @{$src};
+  } elsif ($src !~ /\n/) {
+    open(my $h, '<', $src);
     @lines = <$h>;
     close($h);
   } else {
-    @lines = split(/\n/, $_[0]);
+    @lines = split(/\n/, $src);
   }
 
   my ($elem_array, $elem_ids) = _get_elems_from_header(\@lines);
   my ($elem_ids_o, $hi_ids);
   if ($self->{prespec}) {
-    confess("Wrong number of elements in table") if @{$elem_array} != $self->{n_elems};
+    confess("Wrong number of elements in table") if (!$allow_subset &&
+                                                     @{$elem_array} != $self->{n_elems});
     my $predef_elem_ids = $self->{elem_ids};
     foreach my $elem (@{$elem_array}) {
       confess("'$elem': unknown element in table") if !exists($predef_elem_ids->{$elem});
@@ -112,7 +114,8 @@ sub get {
     $line =~ s/^\|\s*([^|]*?)\s*\|\s*// or confess("Wrong row format: '$line'");
     my $element = $1;
     confess("'$element': duplicate element") if exists($seen{$element});
-    confess("'$element': not in header") if !exists($remaining_elements{$element});
+    confess("'$element': not in header") if (!$allow_subset  &&
+                                             !exists($remaining_elements{$element}));
     delete $remaining_elements{$element};
     $seen{$element} = undef;
     $line =~ s/\s*\|\s*$//;
@@ -143,7 +146,7 @@ sub get {
     }
   }
   confess(join(', ', map("'$_'", sort(keys(%remaining_elements)))) . ": no rows for this elements")
-    if %remaining_elements;
+    if (!$allow_subset && %remaining_elements);
 
   $self->{matrix}   = \%matrix;
   return wantarray ? @{$self}{qw(matrix elems elem_ids)} : $self;

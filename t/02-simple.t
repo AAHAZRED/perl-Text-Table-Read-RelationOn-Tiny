@@ -31,7 +31,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
 
   {
     note('Empty input (array)');
-    is($obj->get([]), $obj, 'get() returns object in scalar context');
+    is($obj->get(src => []), $obj, 'get() returns object in scalar context');
     is_deeply($obj->matrix,   {}, 'matrix(): empty hash');
     is_deeply($obj->elems,    [], 'elems(): empty array');
     is_deeply($obj->elem_ids, {}, 'elem_ids(): empty hash');
@@ -41,7 +41,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
 
   {
     note('Empty input (file)');
-    is($obj->get(catfile(TEST_DIR, '002-empty.txt')),
+    is($obj->get(src => catfile(TEST_DIR, '002-empty.txt')),
        $obj, 'get() returns object in scalar context');
     is_deeply($obj->matrix,   {}, 'matrix(): empty hash');
     is_deeply($obj->elems,    [], 'elems(): empty array');
@@ -51,7 +51,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   }
   {
     note('Empty input (string): spaces only');
-    my ($o_m, $o_e, $o_i) = $obj->get("  \n    \n");
+    my ($o_m, $o_e, $o_i) = $obj->get(src => "  \n    \n");
     my ($matrix, $elems, $elem_ids) = ($obj->matrix, $obj->elems, $obj->elem_ids);
     is($o_m, $matrix,   'get() in list context returns (matrix, elems, elem_ids)  [matrix]');
     is($o_e, $elems,    'get() in list context returns (matrix, elems, elem_ids)  [elems]');
@@ -65,7 +65,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   }
   {
     note('Empty input (file): white spaces only');
-    my ($o_m, $o_e, $o_i) = $obj->get(catfile(TEST_DIR, '002-spaces-only.txt'));
+    my ($o_m, $o_e, $o_i) = $obj->get(src => catfile(TEST_DIR, '002-spaces-only.txt'));
     my ($matrix, $elems, $elem_ids) = ($obj->matrix, $obj->elems, $obj->elem_ids);
     is($o_m, $matrix,   'get() in list context returns (matrix, elems, elem_ids)  [matrix]');
     is($o_e, $elems,    'get() in list context returns (matrix, elems, elem_ids)  [elems]');
@@ -78,9 +78,9 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
     is($obj->n_elems,  0,  'n_elems(): empty set');
   }
 
-  is($obj->get("\n"), $obj, 'get() returns object in scalar context');
+  is($obj->get(src => "\n"), $obj, 'get() returns object in scalar context');
 
-  is_deeply([$obj->get("| *   |\n")],   [{}, [], {}],  "Relation on empty set");
+  is_deeply([$obj->get(src => "| *   |\n")],   [{}, [], {}],  "Relation on empty set");
 }
 
 
@@ -106,7 +106,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
 EOT
     #Don't append a semicolon to the line above!
 
-    my ($o_m, $o_e, $o_i) = $obj->get($input);
+    my ($o_m, $o_e, $o_i) = $obj->get(src => $input);
     my ($matrix, $elems, $elem_ids) = ($obj->matrix, $obj->elems, $obj->elem_ids);
     is($o_m, $matrix,   'get() in list context returns (matrix, elems, elem_ids)  [matrix]');
     is($o_e, $elems,    'get() in list context returns (matrix, elems, elem_ids)  [elems]');
@@ -128,7 +128,7 @@ EOT
 EOT
     #Don't append a semicolon to the line above!
 
-    my ($o_m, $o_e, $o_i) = $obj->get($input);
+    my ($o_m, $o_e, $o_i) = $obj->get(src => $input);
     my ($matrix, $elems, $elem_ids) = ($obj->matrix, $obj->elems, $obj->elem_ids);
     is($o_m, $matrix,   'get() in list context returns (matrix, elems, elem_ids)  [matrix]');
     is($o_e, $elems,    'get() in list context returns (matrix, elems, elem_ids)  [elems]');
@@ -149,7 +149,7 @@ EOT
 EOT
     #Don't append a semicolon to the line above!
 
-    is_deeply([$obj->get($input)], [{0 => {0 => undef}}, [''], {'' => 0}],
+    is_deeply([$obj->get(src => $input)], [{0 => {0 => undef}}, [''], {'' => 0}],
               "Result for one-element set with empty element namee");
     is($obj->n_elems, 1, 'n_elems()');
   }
@@ -197,7 +197,7 @@ EOT
                     }
                    ];
     my $input_bak = $input;
-    is_deeply([$obj->get($input)],
+    is_deeply([$obj->get(src => $input)],
               $expected,
               'Return values of get(STRING) in list context'
              );
@@ -205,7 +205,7 @@ EOT
 
     my @input_array = split(/\n/, $input);
     my @input_array_bak = @input_array;
-    is_deeply([$obj->get(\@input_array)],
+    is_deeply([$obj->get(src => \@input_array)],
               $expected,
               'Return values of get(ARRAY) in list context'
              );
@@ -241,14 +241,14 @@ EOT
                                  'this'    => 1
                                 }
                     );
-    $obj->get(catfile(TEST_DIR, '02-table.txt'));
+    $obj->get(src => catfile(TEST_DIR, '02-table.txt'));
     is_deeply($obj->matrix,   $expected{matrix},   'matrix()');
     is_deeply($obj->elems,    $expected{elems},    'elems()');
     is_deeply($obj->elem_ids, $expected{elem_ids}, 'elem_ids()');
     is($obj->n_elems, 4, 'n_elems()');
 
     note("Same input, but with 'weird' use of horitontal rules");
-    $obj->get(catfile(TEST_DIR, '02-table-weird.txt'));
+    $obj->get(src => catfile(TEST_DIR, '02-table-weird.txt'));
     is_deeply($obj->matrix,   $expected{matrix},   'matrix()');
     is_deeply($obj->elems,    $expected{elems},    'elems()');
     is_deeply($obj->elem_ids, $expected{elem_ids}, 'elem_ids()');

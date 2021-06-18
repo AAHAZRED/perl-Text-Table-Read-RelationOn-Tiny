@@ -69,7 +69,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
 EOT
     #Don't append a semicolon to the line above!
     my $input_bak = $input;
-    is_deeply([$obj->get($input)],
+    is_deeply([$obj->get(src => $input)],
               $expected,
               'Return values of get(STRING) in list context'
              );
@@ -127,7 +127,7 @@ EOT
 EOT
     #Don't append a semicolon to the line above!
 
-  $obj->get($input);
+  $obj->get(src => $input);
 
   is_deeply($obj->elem_ids, { a => 0, a1 => 0, a2 => 0, a3 => 0,
                               b => 1,
