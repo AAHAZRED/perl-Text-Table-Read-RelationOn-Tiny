@@ -31,7 +31,7 @@ sub err_like(&$);
 
   err_like {RELATION_ON->new(set => [1, [], 3])}
     qr/\bset: entry 1: array entry must not be empty/;
-#
+
   err_like {RELATION_ON->new(set => [1, [2, 4, 5], [4, 3]])}
     qr/\bset: '4': duplicate element/;
 
@@ -44,8 +44,8 @@ sub err_like(&$);
 {
   note("get() args");
   my $obj = RELATION_ON->new();
-  err_like {$obj->get(1, 2)} qr/Wrong number of arguments/;
-  err_like {$obj->get({})}   qr/Invalid argument/;
+  err_like {$obj->get(1, 2, 3)}   qr/Odd number of arguments/;
+  err_like {$obj->get(src => {})} qr/Invalid value argument for 'src'/;
 
   note("Accessor args");
   err_like {$obj->inc(1)}        qr/Unexpected argument\(s\)/;
@@ -61,18 +61,18 @@ sub err_like(&$);
 {
   note("Data error: wrong header");
   my $obj = RELATION_ON->new();
-  err_like {$obj->get("foo|\n")}         qr/'foo\|': Wrong header format/;
-  err_like {$obj->get("| |foo|foo|\n")}  qr/'foo': duplicate name in header/;
+  err_like {$obj->get(src => "foo|\n")}         qr/'foo\|': Wrong header format/;
+  err_like {$obj->get(src => "| |foo|foo|\n")}  qr/'foo': duplicate name in header/;
 }
 
 {
   note("Data error: other");
   my $obj = RELATION_ON->new();
-  err_like {$obj->get("|.|foo|\nbar")}         qr/Wrong row format: 'bar'/;
-  err_like {$obj->get("|.|foo|\n|bar|X|")}     qr/'bar': not in header/;
-  err_like {$obj->get("|.|D|\n|D|X|\n|D|X|")}  qr/'D': duplicate element/;
-  err_like {$obj->get("|.|foo|\n|foo|U|")}     qr/'U': unexpected entry/;
-  err_like {$obj->get("|.|E|1|2|\n|E|X| |\n")} qr/'1', '2': no rows for this elements/;
+  err_like {$obj->get(src => "|.|foo|\nbar")}         qr/Wrong row format: 'bar'/;
+  err_like {$obj->get(src => "|.|foo|\n|bar|X|")}     qr/'bar': not in header/;
+  err_like {$obj->get(src => "|.|D|\n|D|X|\n|D|X|")}  qr/'D': duplicate element/;
+  err_like {$obj->get(src => "|.|foo|\n|foo|U|")}     qr/'U': unexpected entry/;
+  err_like {$obj->get(src => "|.|E|1|2|\n|E|X| |\n")} qr/'1', '2': no rows for this elements/;
 }
 
 {
@@ -88,7 +88,7 @@ sub err_like(&$);
 FOT
 #Don't append a semicolon to the line above!
 
-  err_like {$obj->get($tab1)}   qr/Wrong number of elements in table/;
+  err_like {$obj->get(src => $tab1)}   qr/Wrong number of elements in table/;
 
   my $tab2 = <<'FOT';
     | . | a | b | x |
@@ -102,7 +102,7 @@ FOT
 FOT
 #Don't append a semicolon to the line above!
 
-  err_like {$obj->get($tab2)}   qr/'x': unknown element in table/;
+  err_like {$obj->get(src => $tab2)}   qr/'x': unknown element in table/;
 }
 
 #--------------------------------------------------------------------------------------------------
