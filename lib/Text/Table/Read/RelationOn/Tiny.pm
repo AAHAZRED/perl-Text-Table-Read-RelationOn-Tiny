@@ -72,6 +72,7 @@ sub new {
 
 sub get {
   my $self = shift;
+  confess("Missing argument")        if !@_;
   confess("Odd number of arguments") if @_ % 2;
   my ($src, $allow_subset) = @{{@_}}{qw(src allow_subset)};
   my @lines;
@@ -88,7 +89,8 @@ sub get {
 
   my ($elem_array, $elem_ids) = _get_elems_from_header(\@lines);
   my ($elem_ids_o, $hi_ids);
-  if ($self->{prespec}) {
+  my $prespec = $self->{prespec};
+  if ($prespec) {
     confess("Wrong number of elements in table") if (!$allow_subset &&
                                                      @{$elem_array} != $self->{n_elems});
     my $predef_elem_ids = $self->{elem_ids};
@@ -114,9 +116,20 @@ sub get {
     $line =~ s/^\|\s*([^|]*?)\s*\|\s*// or confess("Wrong row format: '$line'");
     my $element = $1;
     confess("'$element': duplicate element") if exists($seen{$element});
-    confess("'$element': not in header") if (!$allow_subset  &&
-                                             !exists($remaining_elements{$element}));
-    delete $remaining_elements{$element};
+    if (exists($remaining_elements{$element})) {
+      delete $remaining_elements{$element};
+    } else {
+      if ($prespec) {
+        confess("'$element': unknown element in table") if !exists($elem_ids_o->{$element});
+      } else {
+        if ($allow_subset) {
+          push(@{$elem_array}, $element);
+          $elem_ids_o->{$element} = $self->{n_elems}++;
+        } else {
+          confess("'$element': not in header") if !$allow_subset;
+        }
+      }
+    }
     $seen{$element} = undef;
     $line =~ s/\s*\|\s*$//;
     my %new_row;
@@ -363,6 +376,20 @@ If you specify both arguments, then their vaules must be different.
 The method reads and parses a table. It takes exactly one argument which may
 be either a file name, an array reference or a string containing newline
 characters.
+
+=over
+
+=item C<src>
+
+Mandatory. The source from which the table is to be read. May be either a file
+name, an array reference or a string containing newline characters.
+
+=item C<allow_subset>
+
+Optional. Take a boolean value. If I<true>, then rows and columns
+
+=back
+
 
 =over
 

@@ -44,6 +44,7 @@ sub err_like(&$);
 {
   note("get() args");
   my $obj = RELATION_ON->new();
+  err_like {$obj->get()}          qr/Missing argument/;
   err_like {$obj->get(1, 2, 3)}   qr/Odd number of arguments/;
   err_like {$obj->get(src => {})} qr/Invalid value argument for 'src'/;
 
