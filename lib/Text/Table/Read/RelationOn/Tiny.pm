@@ -70,24 +70,44 @@ sub new {
 }
 
 
+sub copy_lines {
+  my $lines = shift;
+  my @copy;
+  my $line;
+  my $index = 0;
+  for (; $index < @$lines; ++$index) { # skip heading empty lines
+    last if $lines->[$index] =~ /\S/;
+  }
+  for (; $index < @$lines; ++$index) {
+    ($line = $lines->[$index]) =~ s/^\s+//;
+    last if $line eq q{};
+    next if substr($line, 0, 2) eq "|-";
+    $line =~ s/\s+$//;
+    push(@copy, $line);
+  }
+  return \@copy;
+}
+
+
+
 sub get {
   my $self = shift;
   confess("Missing argument")        if !@_;
   confess("Odd number of arguments") if @_ % 2;
   my ($src, $allow_subset) = @{{@_}}{qw(src allow_subset)};
-  my @lines;
+  my $lines;
   if (ref($src)) {
     confess("Invalid value argument for 'src'") if ref($src) ne 'ARRAY';
-    @lines = @{$src};
+    $lines = copy_lines($src);
   } elsif ($src !~ /\n/) {
     open(my $h, '<', $src);
-    @lines = <$h>;
+    $lines = copy_lines([<$h>]);
     close($h);
   } else {
-    @lines = split(/\n/, $src);
+    $lines = copy_lines([split(/\n/, $src)]);
   }
 
-  my ($elem_array, $elem_ids) = _get_elems_from_header(\@lines);
+  my ($elem_array, $elem_ids) = _get_elems_from_header($lines);
   my ($elem_ids_o, $hi_ids);
   my $prespec = $self->{prespec};
   if ($prespec) {
@@ -109,10 +129,7 @@ sub get {
   my ($inc, $noinc) = @{$self}{qw(inc noinc)};
   my %matrix;
   my %seen;
-  foreach my $line (@lines) {
-    $line =~ s/^\s+//;
-    last if $line eq "";
-    next if substr($line, 0, 2) eq "|-";
+  foreach my $line (@$lines) {
     $line =~ s/^\|\s*([^|]*?)\s*\|\s*// or confess("Wrong row format: '$line'");
     my $element = $1;
     confess("'$element': duplicate element") if exists($seen{$element});
