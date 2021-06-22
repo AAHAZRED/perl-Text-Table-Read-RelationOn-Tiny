@@ -19,6 +19,7 @@ sub new {
   my $inc   = delete $arguments{inc}   // "X";
   my $noinc = delete $arguments{noinc} // "";
   my $set   = delete $arguments{set};
+  my $eqs   = delete $arguments{eqs};
   confess(join(", ", sort(keys(%arguments))) . ": unexpected argument")
     if %arguments;
   confess("inc: must be a scalar")           if ref($inc);
@@ -29,178 +30,69 @@ sub new {
              };
   if (ref($set) eq 'ARRAY') {
     my @elems;                         # elems
-    my %hiIds;                         # id => array of higher equivalent indices
+    my %tabElems;                      # elmes to be used in table --> indes in @elems
+    my %eqIds;                         # idx => array of equivalent idxes
     my %ids;                           # indices in basic elems
-    my %eIds;                          # indices in @elems (elems)
-    my @set_copy = @{$set};
-    $self->{n_elems} = my $cnt = @set_copy;
-    for (my $i = 0; $i < @set_copy; ++$i) {
-      my $entry = $set_copy[$i];
+    my @eqs_tmp;
+
+    for (my $i = 0; $i < @$set; ++$i) {
+      my $entry = $set->[$i];
       confess("set: entry $i: invalid") if !defined($entry);
       if (ref($entry)) {
         confess("set: entry $i: invalid") if ref($entry) ne 'ARRAY';
+        confess("set: array not allowed if eqs is specified") if $eqs;
         confess("set: entry $i: array entry must not be empty") if !@{$entry};
         my $entry_0 = $entry->[0];
         confess("set: subentry must be a defined scalar") if ref($entry_0) || !defined($entry_0);
-        $elems[$i] = $entry_0;
-        confess("set: '$entry_0': duplicate element") if exists($ids{$entry_0});
-        $ids{$entry_0} = $eIds{$entry_0} = $i;
+        push(@elems, $entry_0);
+        $ids{$entry_0} = $tabElems{$entry_0} = $#elems;
         for (my $j = 1; $j < @$entry; ++$j) {
           my $entry_j = $entry->[$j];
           confess("set: '$entry_j': duplicate element") if exists($ids{$entry_j});
           confess("set: subentry must be a defined scalar") if ref($entry_j) || !defined($entry_j);
-          push(@{$hiIds{$i}}, $cnt);
-          $eIds{$entry_j} = $cnt;
-          $ids{$entry_j}  = $i;
-          $elems[$cnt++] = $entry_j;
+          push(@elems, $entry_j);
+          $ids{$entry_j} = $#elems;
         }
+        push(@eqs_tmp, $entry) if @$entry > 1;
       } else {
         confess("set: '$entry': duplicate entry") if exists($ids{$entry});
-        $elems[$i] = $entry;
-        $ids{$entry} = $eIds{$entry} = $i;
+        push(@elems, $entry);
+        $ids{$entry} = $tabElems{$entry} = $#elems;
       }
     }
-    @{$self}{qw(prespec elems elem_ids x_elem_ids hi_ids)} = (1, \@elems, \%ids, \%eIds, \%hiIds);
+    confess("Internal error") if (defined($eqs) && @eqs_tmp); # Should never happen.
+    $eqs = \@eqs_tmp if @eqs_tmp;
+    if (defined($eqs)) {
+      confess("eqs: must be an array ref") if ref($eqs) ne 'ARRAY';
+      foreach my $eqArray (@{$eqs}) {
+        confess("eqs: each entry must be an array ref") if ref($eqArray) ne 'ARRAY';
+        next if !@{$eqArray};
+        foreach my $entry (@{$eqArray}) {
+          confess("eqs: subentry contains a non-scalar") if ref($entry);
+          confess("eqs: subentry undefined")             if !defined($entry);
+        }
+        next if @{$eqArray} == 1;
+        my @tmp = @{$eqArray};
+        my @eqArray;
+        $eqIds{$tabElems{shift(@tmp)}} = \@eqArray;
+        foreach my $e (@tmp) {
+          push(@eqArray, delete $tabElems{$e});
+        }
+      }
+    }
+    @{$self}{qw(elems elem_ids tab_elems eq_ids)} = (\@elems, \%ids, \%tabElems, \%eqIds);
   } elsif (defined($set)) {
     confess("set: must be an array reference");
   } else {
-    $self->{prespec} = "";
+    confess("eqs: not allowed without argument 'set'") if defined($eqs);
   }
   return bless($self, $class);
 }
 
 
-sub copy_lines {
-  my $lines = shift;
-  my @copy;
-  my $line;
-  my $index = 0;
-  for (; $index < @$lines; ++$index) { # skip heading empty lines
-    last if $lines->[$index] =~ /\S/;
-  }
-  for (; $index < @$lines; ++$index) {
-    ($line = $lines->[$index]) =~ s/^\s+//;
-    last if $line eq q{};
-    next if substr($line, 0, 2) eq "|-";
-    $line =~ s/\s+$//;
-    push(@copy, $line);
-  }
-  return \@copy;
-}
-
-
-
-sub get {
-  my $self = shift;
-  confess("Missing argument")        if !@_;
-  confess("Odd number of arguments") if @_ % 2;
-  my ($src, $allow_subset) = @{{@_}}{qw(src allow_subset)};
-  my $lines;
-  if (ref($src)) {
-    confess("Invalid value argument for 'src'") if ref($src) ne 'ARRAY';
-    $lines = copy_lines($src);
-  } elsif ($src !~ /\n/) {
-    open(my $h, '<', $src);
-    $lines = copy_lines([<$h>]);
-    close($h);
-  } else {
-    $lines = copy_lines([split(/\n/, $src)]);
-  }
-
-  my ($elem_array, $elem_ids) = _get_elems_from_header($lines);
-  my ($elem_ids_o, $hi_ids);
-  my $prespec = $self->{prespec};
-  if ($prespec) {
-    confess("Wrong number of elements in table") if (!$allow_subset &&
-                                                     @{$elem_array} != $self->{n_elems});
-    my $predef_elem_ids = $self->{elem_ids};
-    foreach my $elem (@{$elem_array}) {
-      confess("'$elem': unknown element in table") if !exists($predef_elem_ids->{$elem});
-    }
-    $elem_ids_o = $predef_elem_ids;
-    $hi_ids = $self->{hi_ids};
-  } else {
-    @{$self}{qw(elems elem_ids)} = ($elem_array, $elem_ids);
-    $elem_ids_o = $elem_ids;
-    $self->{n_elems} = @{$elem_array};
-    $hi_ids = {};
-  }
-  my %remaining_elements = map {$_ => undef} @{$elem_array};
-  my ($inc, $noinc) = @{$self}{qw(inc noinc)};
-  my %matrix;
-  my %seen;
-  foreach my $line (@$lines) {
-    $line =~ s/^\|\s*([^|]*?)\s*\|\s*// or confess("Wrong row format: '$line'");
-    my $element = $1;
-    confess("'$element': duplicate element") if exists($seen{$element});
-    if (exists($remaining_elements{$element})) {
-      delete $remaining_elements{$element};
-    } else {
-      if ($prespec) {
-        confess("'$element': unknown element in table") if !exists($elem_ids_o->{$element});
-      } else {
-        if ($allow_subset) {
-          push(@{$elem_array}, $element);
-          $elem_ids_o->{$element} = $self->{n_elems}++;
-        } else {
-          confess("'$element': not in header") if !$allow_subset;
-        }
-      }
-    }
-    $seen{$element} = undef;
-    $line =~ s/\s*\|\s*$//;
-    my %new_row;
-    my $index = 0;
-    foreach my $entry (split(/\s*\|\s*/, $line, -1)) {
-      if ($entry eq $inc) {
-        my $e_id = $elem_ids_o->{$elem_array->[$index]};
-        $new_row{$e_id} = undef;
-        if (exists($hi_ids->{$e_id})) {
-          foreach my $hi_id (@{$hi_ids->{$e_id}}) {
-            $new_row{$hi_id} = undef;
-          }
-        }
-      } elsif ($entry ne $noinc) {
-        confess("'$entry': unexpected entry");
-      }
-      $index++;
-    }
-    if (%new_row) {
-      my $e_id = $elem_ids_o->{$element};
-      $matrix{$e_id} = \%new_row;
-      if (exists($hi_ids->{$e_id})) {
-        foreach my $hi_id (@{$hi_ids->{$e_id}}) {
-          $matrix{$hi_id} = {%new_row};
-        }
-      }
-    }
-  }
-  confess(join(', ', map("'$_'", sort(keys(%remaining_elements)))) . ": no rows for this elements")
-    if (!$allow_subset && %remaining_elements);
-
-  $self->{matrix}   = \%matrix;
-  return wantarray ? @{$self}{qw(matrix elems elem_ids)} : $self;
-}
-
-
-sub inc         {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{inc};}
-sub noinc       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
-sub matrix      {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{matrix};}
-sub elems       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
-sub elem_ids    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
-sub x_elem_ids  {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{x_elem_ids};}
-sub prespec     {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
-sub n_elems     {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{n_elems};}
-
-sub bless_matrix {
-  return bless($_[0]->{matrix}, "Text::Table::Read::RelationOn::Tiny::_Relation_Matrix");
-}
-
-sub _get_elems_from_header {
-  my $lines = shift;
-  my $header;
-  while (defined($header = shift(@{$lines})) and $header !~ /\S/) { 1; }
-  return ([], {}) if !defined($header);
+# just a function, not a method.
+sub _parse_header_f {
+  my $header = shift;
   $header =~ s/^\s*\|.*?\|\s*// or confess("'$header': Wrong header format");
   my @elem_array = $header eq "|" ? ('') : split(/\s*\|\s*/, $header);
   return ([], {}) if $header eq "";
@@ -211,6 +103,136 @@ sub _get_elems_from_header {
     $elem_ids{$name} = $index++;
   }
   return (\@elem_array, \%elem_ids);
+}
+
+
+my $_parse_row = sub {
+  my $self = shift;
+  my $row = shift;
+  my ($inc, $noinc) = @{$self}{qw(inc noinc)};
+  $row =~ s/^\|\s*([^|]*?)\s*\|\s*// or confess("Wrong row format: '$row'");
+  my $rowElem = $1;
+  my @rowContents;
+  foreach my $entry (split(/\s*\|\s*/, $row, -1)) {
+    if ($entry eq $inc) {
+      push(@rowContents, 1);
+    } elsif ($entry eq $noinc) {
+      push(@rowContents, "");
+    } else {
+      confess("'$entry': unexpected entry");
+    }
+  }
+  return ($rowElem, \@rowContents);
+};
+
+
+my $_parse_table = sub {
+  my $self = shift;
+  my $lines = shift;
+  my $index = 0;
+  for (; $index < @$lines; ++$index) { # skip heading empty lines
+    last if $lines->[$index] =~ /\S/;
+  }
+  if ($index == @$lines) {
+    @{$self}{qw(matrix elems elem_ids tab_elems eq_ids)} = ({}, {}, (), (), ());
+    return $self->{matrix};
+  }
+  my ($h_elems, $h_ids) = _parse_header_f($lines->[$index++]);
+  my %rows;
+  for (; $index < @$lines; ++$index) {
+    (my $line = $lines->[$index]) =~ s/^\s+//;
+    last if $line eq q{};
+    next if substr($line, 0, 2) eq "|-";
+    $line =~ s/\s+$//;
+    my ($rowElem, $rowContent) = $self->$_parse_row($line);
+    confess("'$rowElem': duplicate element in first column") if exists($rows{$rowElem});
+    $rows{$rowElem} = $rowContent;
+  }
+  my $elem_ids     = $self->{elem_ids};
+  my $allow_subset = $self->{allow_subset};
+  if ($elem_ids) {
+    foreach my $elem (keys(%{$h_ids})) {
+      confess("'$elem': unknown element in table") if !exists($elem_ids->{$elem});
+    }
+    foreach my $elem (keys(%rows)) {
+      confess("'$elem': unknown element in table") if !exists($elem_ids->{$elem});
+    }
+    if (!$allow_subset) {
+      foreach my $elem (keys(%{$elem_ids})) {
+        confess("'$elem': element missing in table (header)") if !exists($h_ids->{$elem});
+        confess("'$elem': element missing in table (row)"   ) if !exists($rows{$elem});
+      }
+    }
+  } else {
+    if ($allow_subset) {
+      foreach my $elem (keys(%rows)) {
+        if (!exists($h_ids->{$elem})) {
+          $h_ids->{$elem} = @{$h_elems};
+          push(@{$h_elems}, $elem);
+        }
+      }
+    } else {
+      confess("Number of elements in header does not match")
+        if keys(%{$h_ids}) != keys(%rows);
+      foreach my $elem (keys(%{$h_ids})) {
+        confess("'$elem': row missing for element") if !exists($rows{$elem});
+      }
+      foreach my $elem (keys(%rows)) {
+        confess("'$elem': column missing for element") if !exists($h_ids->{$elem});
+      }
+    }
+    my %tmp = %{$h_ids};
+    @{$self}{qw(elems elem_ids tab_elems eq_ids)} = ($h_elems, $h_ids, \%tmp, {});
+    $elem_ids = $h_ids;
+  }
+  my $elems = $self->{elems};
+  my %matrix;
+  while (my ($rowElem, $rowContents) = each(%rows)) {
+    my $matrixRow  = {};
+    for (my $i = 0; $i < @{$rowContents}; $i++) {
+      $matrixRow->{$elem_ids->{$h_elems->[$i]}} = undef if $rowContents->[$i];
+    }
+    $matrix{$elem_ids->{$rowElem}} = $matrixRow if %{$matrixRow};
+  }
+  return $self->{matrix} = \%matrix;
+};
+
+
+sub get {
+  my $self = shift;
+  confess("Missing argument")        if !@_;
+  confess("Odd number of arguments") if @_ % 2;
+  my ($src, $allow_subset) = @{{@_}}{qw(src allow_subset)};
+  my $inputArray;
+  if (ref($src)) {
+    confess("Invalid value argument for 'src'") if ref($src) ne 'ARRAY';
+    foreach my $e (@{$src}) {
+      confess("src: each entry must be a defined scalar") if (ref($e) || !defined($e));
+    }
+    $inputArray = $src;
+  } elsif ($src !~ /\n/) {
+    open(my $h, '<', $src);
+    $inputArray = [<$h>];
+    close($h);
+  } else {
+    $inputArray = [split(/\n/, $src)];
+  }
+  $self->$_parse_table->($inputArray);
+  return wantarray ? @{$self}{qw(matrix elems elem_ids)} : $self;
+}
+
+
+
+
+sub inc         {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{inc};}
+sub noinc       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
+sub elems       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
+sub elem_ids    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
+sub matrix      {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{matrix};}
+
+
+sub bless_matrix {
+  return bless($_[0]->{matrix}, "Text::Table::Read::RelationOn::Tiny::_Relation_Matrix");
 }
 
 
@@ -366,20 +388,12 @@ elements):
 
   [a b c d a1 a2 a3 c1]
 
-and method C<n_elems> will return 4. Method C<elem_ids> will return:
+Method C<elem_ids> will return:
 
   { a => 0, a1 => 0, a2 => 0, a3 => 0,
     b => 1,
     c => 2, c1 => 2,
     d => 3
-  }
-
-mapping duplicates to the same index, while C<x_elem_ids> will return:
-
-  { a  => 0, a1 => 4, a2 => 5, a3 => 6,
-    b  => 1,
-    c  => 2, c1 => 7,
-    d  => 3
   }
 
 
@@ -540,36 +554,7 @@ returned by C<elems>), or C<undef> if you did neither call C<get> for the
 current object nor specified argument C<set> when calling the constructor. If
 you used constructor argument C<set> to specify duplicates, then the
 duplicates are mapped to the same index (especially each index is smaller than
-the return value of C<n_elems>). See description of C<get> and C<new>.
-
-
-=head3 C<x_elem_ids>
-
-If constructor argument C<set> was not specified, then this method returns
-C<undef>. Otherwise, it returns a reference to a hash mapping each element to
-its index in the array returned by C<elems>. In case of duplicates, such an
-index may be equal or greater than the return value of C<n_elems>.
-
-
-
-=head3 C<prespec>
-
-Returns 1 (true) if you specified constructor argument C<set> when calling the
-constructor, otherwise it returns an empty string (false).
-
-
-=head3 C<n_elems>
-
-Returns the number of elements in table: If constructor argument C<set> was
-specified, then this is the number of elements in the corresponding
-set. Otherwise, C<n_elems> returns C<undef> before C<get> has been called,
-after the first call of C<get>, it returns the number of elements of the set
-taken from the table.
-
-C<Note>: If constructor argument C<set> was specified and some entries in the
-corresponding array were array references again, then C<n_elems> needs not to
-be equal to the number of entries in the array returned by
-C<elems>. Typically, C<n_elems> will be smaller in such a case.
+the return value of XXXXXXXXXXXXXX). See description of C<get> and C<new>.
 
 
 =head3 C<bless_matrix>
