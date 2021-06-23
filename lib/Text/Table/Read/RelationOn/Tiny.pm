@@ -222,13 +222,10 @@ sub get {
 }
 
 
-
-
 sub inc         {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{inc};}
 sub noinc       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
 sub elems       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
 sub elem_ids    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
-sub matrix      {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{matrix};}
 
 sub matrix {
   my $self = shift;
