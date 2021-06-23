@@ -230,10 +230,29 @@ sub elems       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
 sub elem_ids    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
 sub matrix      {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{matrix};}
 
-
-sub bless_matrix {
-  return bless($_[0]->{matrix}, "Text::Table::Read::RelationOn::Tiny::_Relation_Matrix");
+sub matrix {
+  my $self = shift;
+  my %args = @_;
+  bless($self->{matrix}, "Text::Table::Read::RelationOn::Tiny::_Relation_Matrix")
+    if delete $args{bless};
+  confess("Unexpected argments") if %args;
+  return $self->{matrix};
 }
+
+sub matrix_named {
+  my $self = shift;
+  my %args = @_;
+  my $matrix_named = {};
+  bless($matrix_named, "Text::Table::Read::RelationOn::Tiny::_Relation_Matrix")
+    if delete $args{bless};
+  confess("Unexpected argments") if %args;
+  my ($matrix, $elems) = @{$self}{qw(matrix elems)};
+  while (my ($rowElemIdx, $rowContents) = each(%{$matrix})) {
+    $matrix_named->{$elems->[$rowElemIdx]} = {map {$elems->[$_] => undef} keys(%{$rowContents})};
+  }
+  return $matrix_named;
+}
+
 
 
 {
