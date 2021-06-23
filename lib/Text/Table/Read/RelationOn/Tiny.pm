@@ -134,8 +134,9 @@ my $_parse_table = sub {
     last if $lines->[$index] =~ /\S/;
   }
   if ($index == @$lines) {
-    @{$self}{qw(matrix elems elem_ids tab_elems eq_ids)} = ({}, {}, (), (), ());
-    return $self->{matrix};
+    @{$self}{qw(matrix elems elem_ids tab_elems eq_ids)} =
+      (         {},    [],   {},      {},       {});
+    return;
   }
   my ($h_elems, $h_ids) = _parse_header_f($lines->[$index++]);
   my %rows;
@@ -194,7 +195,8 @@ my $_parse_table = sub {
     }
     $matrix{$elem_ids->{$rowElem}} = $matrixRow if %{$matrixRow};
   }
-  return $self->{matrix} = \%matrix;
+  $self->{matrix} = \%matrix;
+  return;
 };
 
 
@@ -217,7 +219,7 @@ sub get {
   } else {
     $inputArray = [split(/\n/, $src)];
   }
-  $self->$_parse_table->($inputArray);
+  $self->$_parse_table($inputArray);
   return wantarray ? @{$self}{qw(matrix elems elem_ids)} : $self;
 }
 
