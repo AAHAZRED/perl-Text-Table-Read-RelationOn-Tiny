@@ -24,12 +24,23 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   is($obj->elems,      undef, 'elems()');
   is($obj->elem_ids,   undef, 'elem_ids()');
 
+  is($obj->matrix_named,             undef, 'matrix_named()');
+  is($obj->matrix_named(bless => 1), undef, 'matrix_named(bless => 1)');
+
+  ok(!$obj->prespec, "prespec() returns false");
   {
     note('Empty input (array)');
     is($obj->get(src => []), $obj, 'get() returns object in scalar context');
     is_deeply($obj->matrix,   {}, 'matrix(): empty hash');
     is_deeply($obj->elems,    [], 'elems(): empty array');
     is_deeply($obj->elem_ids, {}, 'elem_ids(): empty hash');
+    ok(!$obj->prespec, "prespec() still returns false");
+
+    is_deeply($obj->matrix_named, {}, 'matrix_named()');
+    my $matrix_named = $obj->matrix_named(bless => 1);
+    is_deeply($matrix_named, {}, 'matrix_named()');
+    isa_ok($matrix_named, 'Text::Table::Read::RelationOn::Tiny::_Relation_Matrix',
+           '$matrix_named');
   }
 
   {
@@ -81,7 +92,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   is($obj->matrix,   undef, 'matrix()');
   is($obj->elems,    undef, 'elems()');
   is($obj->elem_ids, undef, 'elem_ids()');
-
+  ok(!$obj->prespec, "prespec() returns false");
   {
     note("Single element input / non empty relation");
     my $input = <<'EOT';
@@ -192,11 +203,33 @@ EOT
              );
     is_deeply(\@input_array, \@input_array_bak, "Input array not changed");
     my $org_matrix = $obj->matrix;
-    my $matrix     = $obj->bless_matrix;
+    my $matrix     = $obj->matrix(bless => 1);
     is($matrix, $org_matrix, "bless_matrix() does not change matrix");
     isa_ok($matrix, 'Text::Table::Read::RelationOn::Tiny::_Relation_Matrix', '$matrix');
     ok($matrix->related(0, 2), "related(0, 2)");
     ok(!$matrix->related(1, 0), "NOT related(1, 0)");
+
+    my $matrix_named = $obj->matrix_named;
+    is_deeply($matrix_named, {
+                              that      => {
+                                            'foo bar' => undef
+                                           },
+                              this      => {
+                                            this => undef,
+                                            'foo bar' => undef
+                                           },
+                              'foo bar'  => {
+                                             that => undef
+                                            }
+                             },
+              'matrix_named()'
+             );
+    my $matrix_named_blessed = $obj->matrix_named(bless => 1);
+    isa_ok($matrix_named_blessed, 'Text::Table::Read::RelationOn::Tiny::_Relation_Matrix',
+           '$matrix_named');
+    ok($matrix_named_blessed->related('this', 'foo bar'), "related(0, 2)");
+    ok(!$matrix_named_blessed->related('that', 'this'), "NOT related(1, 0)");
+
   }
   {
     note("Same input, but from file + rows and columns reordered");

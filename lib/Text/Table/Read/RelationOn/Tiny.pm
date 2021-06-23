@@ -15,13 +15,12 @@ use version 0.77; our $VERSION = version->declare("v2.0.0");
 sub new {
   my $class = shift;
   $class = ref($class) if ref($class);
-  my %arguments = @_;
-  my $inc   = delete $arguments{inc}   // "X";
-  my $noinc = delete $arguments{noinc} // "";
-  my $set   = delete $arguments{set};
-  my $eqs   = delete $arguments{eqs};
-  confess(join(", ", sort(keys(%arguments))) . ": unexpected argument")
-    if %arguments;
+  my %args = @_;
+  my $inc   = delete $args{inc}   // "X";
+  my $noinc = delete $args{noinc} // "";
+  my $set   = delete $args{set};
+  my $eqs   = delete $args{eqs};
+  confess(join(", ", sort(keys(%args))) . ": unexpected argument") if %args;
   confess("inc: must be a scalar")           if ref($inc);
   confess("noinc: must be a scalar")         if ref($noinc);
   confess("inc and noinc must be different") if $inc eq $noinc;
@@ -35,6 +34,7 @@ sub new {
     my %ids;                           # indices in basic elems
     my @eqs_tmp;
 
+    $self->{prespec} = 1;
     for (my $i = 0; $i < @$set; ++$i) {
       my $entry = $set->[$i];
       confess("set: entry $i: invalid") if !defined($entry);
@@ -84,10 +84,22 @@ sub new {
   } elsif (defined($set)) {
     confess("set: must be an array reference");
   } else {
+    $self->{prespec} = "";
     confess("eqs: not allowed without argument 'set'") if defined($eqs);
   }
   return bless($self, $class);
 }
+
+
+#
+# $self->$_reset()  - set (matrix elems elem_ids tab_elems eq_ids) to
+#                     empty structures
+# $self->$_reset(1) - set (matrix elems elem_ids tab_elems eq_ids) to
+#                     undef
+my $_reset = sub {
+  @{$_[0]}{qw(matrix elems elem_ids tab_elems eq_ids)} =
+    $_[1] ? ( {},    [],   {},      {},       {})  : ((undef) x 5);
+};
 
 
 # just a function, not a method.
@@ -112,6 +124,7 @@ my $_parse_row = sub {
   my ($inc, $noinc) = @{$self}{qw(inc noinc)};
   $row =~ s/^\|\s*([^|]*?)\s*\|\s*// or confess("Wrong row format: '$row'");
   my $rowElem = $1;
+  $row =~ s/\s*\|\s*$//;
   my @rowContents;
   foreach my $entry (split(/\s*\|\s*/, $row, -1)) {
     if ($entry eq $inc) {
@@ -119,7 +132,7 @@ my $_parse_row = sub {
     } elsif ($entry eq $noinc) {
       push(@rowContents, "");
     } else {
-      confess("'$entry': unexpected entry");
+      confess("'$entry': unexpected entry >>>$row<<<");
     }
   }
   return ($rowElem, \@rowContents);
@@ -134,8 +147,7 @@ my $_parse_table = sub {
     last if $lines->[$index] =~ /\S/;
   }
   if ($index == @$lines) {
-    @{$self}{qw(matrix elems elem_ids tab_elems eq_ids)} =
-      (         {},    [],   {},      {},       {});
+    $self->$_reset(1);
     return;
   }
   my ($h_elems, $h_ids) = _parse_header_f($lines->[$index++]);
@@ -151,8 +163,9 @@ my $_parse_table = sub {
   }
   my $elem_ids     = $self->{elem_ids};
   my $allow_subset = $self->{allow_subset};
-  if ($elem_ids) {
+  if ($self->{prespec}) {
     foreach my $elem (keys(%{$h_ids})) {
+      use Data::Dumper; say Dumper $h_ids;
       confess("'$elem': unknown element in table") if !exists($elem_ids->{$elem});
     }
     foreach my $elem (keys(%rows)) {
@@ -204,7 +217,9 @@ sub get {
   my $self = shift;
   confess("Missing argument")        if !@_;
   confess("Odd number of arguments") if @_ % 2;
-  my ($src, $allow_subset) = @{{@_}}{qw(src allow_subset)};
+  my %args = @_;
+  my $src = delete $args{src};
+  confess(join(", ", sort(keys(%args))) . ": unexpected argument") if %args;
   my $inputArray;
   if (ref($src)) {
     confess("Invalid value argument for 'src'") if ref($src) ne 'ARRAY';
@@ -219,6 +234,7 @@ sub get {
   } else {
     $inputArray = [split(/\n/, $src)];
   }
+  $self->$_reset() if !$self->{prespec};
   $self->$_parse_table($inputArray);
   return wantarray ? @{$self}{qw(matrix elems elem_ids)} : $self;
 }
@@ -226,26 +242,31 @@ sub get {
 
 sub inc         {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{inc};}
 sub noinc       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
+sub prespec     {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
 sub elems       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
 sub elem_ids    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
+
 
 sub matrix {
   my $self = shift;
   my %args = @_;
+  return if !$self->{matrix};
   bless($self->{matrix}, "Text::Table::Read::RelationOn::Tiny::_Relation_Matrix")
     if delete $args{bless};
   confess("Unexpected argments") if %args;
   return $self->{matrix};
 }
 
+
 sub matrix_named {
   my $self = shift;
   my %args = @_;
+  my ($matrix, $elems) = @{$self}{qw(matrix elems)};
+  return if !$matrix;
   my $matrix_named = {};
   bless($matrix_named, "Text::Table::Read::RelationOn::Tiny::_Relation_Matrix")
     if delete $args{bless};
   confess("Unexpected argments") if %args;
-  my ($matrix, $elems) = @{$self}{qw(matrix elems)};
   while (my ($rowElemIdx, $rowContents) = each(%{$matrix})) {
     $matrix_named->{$elems->[$rowElemIdx]} = {map {$elems->[$_] => undef} keys(%{$rowContents})};
   }
