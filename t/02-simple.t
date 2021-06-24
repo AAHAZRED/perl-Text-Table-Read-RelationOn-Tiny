@@ -84,7 +84,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
 
 {
   note('Simple / with constructor args');
-  my $obj = new_ok('Text::Table::Read::RelationOn::Tiny' => [inc => 'x y', noinc => '-']);
+  my $obj = new_ok('Text::Table::Read::RelationOn::Tiny' => [inc => ' x y', noinc => ' -  ']);
 
   is($obj->inc,   'x y', 'inc()');
   is($obj->noinc, '-',   'noinc()');
