@@ -15,6 +15,7 @@ ok(Text::Table::Read::RelationOn::Tiny->can('inc')          ,          'inc() ex
 ok(Text::Table::Read::RelationOn::Tiny->can('noinc')        ,        'noinc() exists');
 ok(Text::Table::Read::RelationOn::Tiny->can('elems')        ,        'elems() exists');
 ok(Text::Table::Read::RelationOn::Tiny->can('elem_ids')     ,     'elem_ids() exists');
+ok(Text::Table::Read::RelationOn::Tiny->can('tab_elems')    ,    'tab_elems() exists');
 ok(Text::Table::Read::RelationOn::Tiny->can('matrix')       ,       'matrix() exists');
 ok(Text::Table::Read::RelationOn::Tiny->can('matrix_named') , 'matrix_named() exists');
 
