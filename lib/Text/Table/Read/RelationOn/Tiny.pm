@@ -129,15 +129,18 @@ my $_parse_row = sub {
   my ($inc, $noinc) = @{$self}{qw(inc noinc)};
   $row =~ s/^\|\s*([^|]*?)\s*\|\s*// or die("Wrong row format: '$row'");
   my $rowElem = $1;
-  $row =~ s/\s*\|\s*$//;
   my @rowContents;
-  foreach my $entry (split(/\s*\|\s*/, $row, -1)) {
-    if ($entry eq $inc) {
-      push(@rowContents, 1);
-    } elsif ($entry eq $noinc) {
-      push(@rowContents, "");
-    } else {
-      die("'$entry': unexpected entry");
+  if ($row ne "") {
+    $row =~ s/\s*\|\s*$//;
+    my @entries = $row eq "" ? ("") : split(/\s*\|\s*/, $row, -1);
+    foreach my $entry (@entries) {
+      if ($entry eq $inc) {
+        push(@rowContents, 1);
+      } elsif ($entry eq $noinc) {
+        push(@rowContents, "");
+      } else {
+        die("'$entry': unexpected entry");
+      }
     }
   }
   return ($rowElem, \@rowContents);
@@ -246,6 +249,7 @@ sub noinc       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
 sub prespec     {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
 sub elems       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
 sub elem_ids    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
+sub tab_elems   {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{tab_elems};}
 
 
 sub matrix {

@@ -121,33 +121,34 @@ sub err_like(&$);
 
 {
   note("Data error: other, without predefined set");
-  my $obj = RELATION_ON->new();
-  err_like {$obj->get(src => "|.|foo|\nbar")}         qr/^Wrong row format: 'bar'/;
-  err_like {$obj->get(src => "|.|foo|\n|foo|U|")}     qr/^'U': unexpected entry/;
+  my $obj = RELATION_ON->new(noinc => '-');
+  err_like {$obj->get(src => "|.|foo|\nbar")}        qr/^Wrong row format: 'bar'/;
+  err_like {$obj->get(src => "|.|foo|\n|foo|U|")}    qr/^'U': unexpected entry/;
+  err_like {$obj->get(src => "|.|foo|\n|foo| |")}    qr/^'': unexpected entry/;
   err_like {$obj->get(src => ["|.|D|",
                               "|D|X|",
-                              "|D|X|"])}              qr/^'D': duplicate element in first column/;
+                              "|D|X|"])}             qr/^'D': duplicate element in first column/;
   err_like {$obj->get(src => ["|.|E|a|b|",
-                              "|E| |X| |"])}          qr/^Number\ of\ elements\ in\ header\ does
-                                                         \ not\ match\ number\ of\ elemens\ in
-                                                         \ row/x;
+                              "|E|-|X|-|"])}         qr/^Number\ of\ elements\ in\ header\ does
+                                                        \ not\ match\ number\ of\ elemens\ in
+                                                        \ row/x;
   err_like {$obj->get(src => ["|.|a|b|c|",
-                              "|b| | | |",
-                              "|a| |X| |",
-                              "|c| | | |",
-                              "|E| | |X|"])}          qr/^Number\ of\ elements\ in\ header\ does
-                                                         \ not\ match\ number\ of\ elemens\ in
-                                                         \ row/x;
+                              "|b|-|-|-|",
+                              "|a|-|X|-|",
+                              "|c|-|-|-|",
+                              "|E|-|-|X|"])}         qr/^Number\ of\ elements\ in\ header\ does
+                                                        \ not\ match\ number\ of\ elemens\ in
+                                                        \ row/x;
   err_like {$obj->get(src => ["|.|a|M|c|",
-                              "|c| | | |",
-                              "|b| | | |",
-                              "|a| | |X|"])}          qr/^'M': row missing for element/;
+                              "|c|-|-|-|",
+                              "|b|-|-|-|",
+                              "|a|-|-|X|"])}         qr/^'M': row missing for element/;
 }
 
 {
   note("Data error: other, with predefined set");
   my $obj = RELATION_ON->new(set => [qw(a b c)]);
-  err_like {$obj->get(src => "|.|a|b|c|\na")}         qr/^Wrong row format: 'a'/;
+  err_like {$obj->get(src => "|.|a|b|c|\na")}        qr/^Wrong row format: 'a'/;
   err_like {$obj->get(src => ["|.|a|U|c|",
                               "|c| | | |",
                               "|b| | | |",

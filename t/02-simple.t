@@ -23,6 +23,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   is($obj->matrix,     undef, 'matrix()');
   is($obj->elems,      undef, 'elems()');
   is($obj->elem_ids,   undef, 'elem_ids()');
+  is($obj->tab_elems,  undef, 'tab_elems()');
 
   is($obj->matrix_named,             undef, 'matrix_named()');
   is($obj->matrix_named(bless => 1), undef, 'matrix_named(bless => 1)');
@@ -31,9 +32,10 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   {
     note('Empty input (array)');
     is($obj->get(src => []), $obj, 'get() returns object in scalar context');
-    is_deeply($obj->matrix,   {}, 'matrix(): empty hash');
-    is_deeply($obj->elems,    [], 'elems(): empty array');
-    is_deeply($obj->elem_ids, {}, 'elem_ids(): empty hash');
+    is_deeply($obj->matrix,    {}, 'matrix(): empty hash');
+    is_deeply($obj->elems,     [], 'elems(): empty array');
+    is_deeply($obj->elem_ids,  {}, 'elem_ids(): empty hash');
+    is_deeply($obj->tab_elems, {}, 'tab_elems(): empty hash');
     ok(!$obj->prespec, "prespec() still returns false");
 
     is_deeply($obj->matrix_named, {}, 'matrix_named()');
@@ -47,9 +49,10 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
     note('Empty input (file)');
     is($obj->get(src => catfile(TEST_DIR, '002-empty.txt')),
        $obj, 'get() returns object in scalar context');
-    is_deeply($obj->matrix,   {}, 'matrix(): empty hash');
-    is_deeply($obj->elems,    [], 'elems(): empty array');
-    is_deeply($obj->elem_ids, {}, 'elem_ids(): empty hash');
+    is_deeply($obj->matrix,    {}, 'matrix(): empty hash');
+    is_deeply($obj->elems,     [], 'elems(): empty array');
+    is_deeply($obj->elem_ids,  {}, 'elem_ids(): empty hash');
+    is_deeply($obj->tab_elems, {}, 'tab_elems(): empty hash');
   }
   {
     note('Empty input (string): spaces only');
@@ -59,9 +62,10 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
     is($o_e, $elems,    'get() in list context returns (matrix, elems, elem_ids)  [elems]');
     is($o_i, $elem_ids, 'get() in list context returns (matrix, elems, elem_ids)  [elem_ids]');
 
-    is_deeply($matrix,   {}, 'matrix(): empty array');
-    is_deeply($elems,    [], 'elems(): empty hash');
-    is_deeply($elem_ids, {}, 'elem_ids(): empty hash');
+    is_deeply($matrix,         {}, 'matrix(): empty array');
+    is_deeply($elems,          [], 'elems(): empty hash');
+    is_deeply($elem_ids,       {}, 'elem_ids(): empty hash');
+    is_deeply($obj->tab_elems, {}, 'tab_elems(): empty hash');
   }
   {
     note('Empty input (file): white spaces only');
@@ -71,9 +75,10 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
     is($o_e, $elems,    'get() in list context returns (matrix, elems, elem_ids)  [elems]');
     is($o_i, $elem_ids, 'get() in list context returns (matrix, elems, elem_ids)  [elem_ids]');
 
-    is_deeply($matrix,   {}, 'matrix(): empty array');
-    is_deeply($elems,    [], 'elems(): empty hash');
-    is_deeply($elem_ids, {}, 'elem_ids(): empty hash');
+    is_deeply($matrix,         {}, 'matrix(): empty array');
+    is_deeply($elems,          [], 'elems(): empty hash');
+    is_deeply($elem_ids,       {}, 'elem_ids(): empty hash');
+    is_deeply($obj->tab_elems, {}, 'tab_elems(): empty hash');
   }
 
   is($obj->get(src => "\n"), $obj, 'get() returns object in scalar context');
@@ -89,9 +94,10 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   is($obj->inc,   'x y', 'inc()');
   is($obj->noinc, '-',   'noinc()');
 
-  is($obj->matrix,   undef, 'matrix()');
-  is($obj->elems,    undef, 'elems()');
-  is($obj->elem_ids, undef, 'elem_ids()');
+  is($obj->matrix,    undef, 'matrix()');
+  is($obj->elems,     undef, 'elems()');
+  is($obj->elem_ids,  undef, 'elem_ids()');
+  is($obj->tab_elems, undef, 'tab_elems()');
   ok(!$obj->prespec, "prespec() returns false");
   {
     note("Single element input / non empty relation");
@@ -109,16 +115,17 @@ EOT
     is($o_e, $elems,    'get() in list context returns (matrix, elems, elem_ids)  [elems]');
     is($o_i, $elem_ids, 'get() in list context returns (matrix, elems, elem_ids)  [elem_ids]');
 
-    is_deeply($matrix,   {0 => {0 => undef}}, 'matrix()');
-    is_deeply($elems,    ['Foo'],             'elems()');
-    is_deeply($elem_ids, {Foo => 0},          'elem_ids()');
+    is_deeply($matrix,         {0 => {0 => undef}}, 'matrix()');
+    is_deeply($elems,          ['Foo'],             'elems()');
+    is_deeply($elem_ids,       {Foo => 0},          'elem_ids()');
+    is_deeply($obj->tab_elems, {Foo => 0},          'tab_elems()');
   }
   {
     note("Single element input / empty relation");
     my $input = <<'EOT';
       | *   | Foo |
       |-----+-----|
-      | Foo |     |
+      | Foo |  -  |
       |-----+-----|
 EOT
     #Don't append a semicolon to the line above!
@@ -129,9 +136,10 @@ EOT
     is($o_e, $elems,    'get() in list context returns (matrix, elems, elem_ids)  [elems]');
     is($o_i, $elem_ids, 'get() in list context returns (matrix, elems, elem_ids)  [elem_ids]');
 
-    is_deeply($matrix,   {},         'matrix()');
-    is_deeply($elems,    ['Foo'],    'elems()');
-    is_deeply($elem_ids, {Foo => 0}, 'elem_ids()');
+    is_deeply($matrix,         {},         'matrix()');
+    is_deeply($elems,          ['Foo'],    'elems()');
+    is_deeply($elem_ids,       {Foo => 0}, 'elem_ids()');
+    is_deeply($obj->tab_elems, {Foo => 0}, 'tab_elems()');
 
     note("Same, but empty name");
     $input = <<'EOT';
@@ -255,16 +263,87 @@ EOT
                                 }
                     );
     $obj->get(src => catfile(TEST_DIR, '02-table.txt'));
-    is_deeply($obj->matrix,   $expected{matrix},   'matrix()');
-    is_deeply($obj->elems,    $expected{elems},    'elems()');
-    is_deeply($obj->elem_ids, $expected{elem_ids}, 'elem_ids()');
+    is_deeply($obj->matrix,    $expected{matrix},   'matrix()');
+    is_deeply($obj->elems,     $expected{elems},    'elems()');
+    is_deeply($obj->elem_ids,  $expected{elem_ids}, 'elem_ids()');
+    is_deeply($obj->tab_elems, $expected{elem_ids}, 'tab_elems()');
 
     note("Same input, but with 'weird' use of horitontal rules");
     $obj->get(src => catfile(TEST_DIR, '02-table-weird.txt'));
-    is_deeply($obj->matrix,   $expected{matrix},   'matrix()');
-    is_deeply($obj->elems,    $expected{elems},    'elems()');
-    is_deeply($obj->elem_ids, $expected{elem_ids}, 'elem_ids()');
+    is_deeply($obj->matrix,    $expected{matrix},   'matrix()');
+    is_deeply($obj->elems,     $expected{elems},    'elems()');
+    is_deeply($obj->elem_ids,  $expected{elem_ids}, 'elem_ids()');
+    is_deeply($obj->tab_elems, $expected{elem_ids}, 'tab_elems()');
   }
+}
+
+{
+  note("allow_subset");
+  note(" --- 1.");
+  my $obj = Text::Table::Read::RelationOn::Tiny->new(inc => 'x y', noinc => '-');
+  $obj->get(src => [
+                    "| *   |     |",
+                    "|-----+-----|",
+                    "|     | x y |",
+                    "|-----+-----|",
+                    "|  a  | -   |",
+                    "|-----+-----|",
+                    "|  b  | x y |",
+                    "|-----+-----|"
+                   ],
+            allow_subset => 1);
+  is_deeply($obj->elems, ['', 'a', 'b'], 'elems');
+  is_deeply($obj->elem_ids, {'' => 0, a => 1, b => 2}, 'elem_ids');
+  is_deeply($obj->tab_elems, $obj->elem_ids, 'tab_elems');
+  is_deeply($obj->matrix, {0 => {
+                                 0 => undef
+                                },
+                           2 => {
+                                 0 => undef
+                                }
+                          },
+            'matrix');
+
+  note(" --- 2.");
+  $obj->get(src => [
+                    "| *   |  a  |  b  |",
+                    "|-----+-----|-----|",
+                    "|  a  | x y |  -  |"
+                   ],
+            allow_subset => 1);
+  is_deeply($obj->elems, ['a', 'b'], 'elems');
+  is_deeply($obj->elem_ids, {a => 0, b => 1}, 'elem_ids');
+  is_deeply($obj->tab_elems, $obj->elem_ids, 'tab_elems');
+  is_deeply($obj->matrix, {0 => {
+                                 0 => undef
+                                }
+                          },
+            'matrix');
+
+  note(" --- 3. - no rows");
+  $obj->get(src => [
+                    "| *   |  a  |  b  |",
+                   ],
+            allow_subset => 1);
+  is_deeply($obj->elems, ['a', 'b'], 'elems');
+  is_deeply($obj->elem_ids, {a => 0, b => 1}, 'elem_ids');
+  is_deeply($obj->tab_elems, $obj->elem_ids, 'tab_elems');
+  is_deeply($obj->matrix, {}, 'matrix');
+
+  note(" --- 4. - no columns");
+  $obj->get(src => [
+                    "| *   |",
+                    "|-----+",
+                    "|  a  |",
+                    "|-----+",
+                    "|  b  |",
+                    "|-----+"
+                   ],
+            allow_subset => 1);
+  is_deeply($obj->elems, ['a', 'b'], 'elems');
+  is_deeply($obj->elem_ids, {a => 0, b => 1}, 'elem_ids');
+  is_deeply($obj->tab_elems, $obj->elem_ids, 'tab_elems');
+  is_deeply($obj->matrix, {}, 'matrix');
 }
 
 #==================================================================================================
