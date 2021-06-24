@@ -268,7 +268,7 @@ EOT
     is_deeply($obj->elem_ids,  $expected{elem_ids}, 'elem_ids()');
     is_deeply($obj->tab_elems, $expected{elem_ids}, 'tab_elems()');
 
-    note("Same input, but with 'weird' use of horitontal rules");
+    note("Same input, but with 'weird' use of horizontal rules");
     $obj->get(src => catfile(TEST_DIR, '02-table-weird.txt'));
     is_deeply($obj->matrix,    $expected{matrix},   'matrix()');
     is_deeply($obj->elems,     $expected{elems},    'elems()');
