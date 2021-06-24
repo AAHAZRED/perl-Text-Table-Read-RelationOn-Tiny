@@ -159,6 +159,7 @@ my $_parse_table = sub {
     return;
   }
   my ($h_elems, $h_ids) = _parse_header_f($lines->[$index++]);
+  my $elem_ids;
   my %rows;
   for (; $index < @$lines; ++$index) {
     (my $line = $lines->[$index]) =~ s/^\s+//;
@@ -169,16 +170,17 @@ my $_parse_table = sub {
     die("'$rowElem': duplicate element in first column") if exists($rows{$rowElem});
     $rows{$rowElem} = $rowContent;
   }
-  my $elem_ids     = $self->{elem_ids};
   if ($self->{prespec}) {
+    my $tab_elems = $self->{tab_elems};
+    $elem_ids     = $self->{elem_ids};
     foreach my $elem (keys(%{$h_ids})) {
-      die("'$elem': unknown element in table") if !exists($elem_ids->{$elem});
+      die("'$elem': unknown element in table") if !exists($tab_elems->{$elem});
     }
     foreach my $elem (keys(%rows)) {
-      die("'$elem': unknown element in table") if !exists($elem_ids->{$elem});
+      die("'$elem': unknown element in table") if !exists($tab_elems->{$elem});
     }
     if (!$allow_subset) {
-      foreach my $elem (keys(%{$elem_ids})) {
+      foreach my $elem (keys(%{$tab_elems})) {
         die("'$elem': column missing for element") if !exists($h_ids->{$elem});
         die("'$elem': row missing for element"   ) if !exists($rows{$elem});
       }
@@ -202,7 +204,7 @@ my $_parse_table = sub {
     @{$self}{qw(elems elem_ids tab_elems eq_ids)} = ($h_elems, $h_ids, \%tmp, {});
     $elem_ids = $h_ids;
   }
-  my $elems = $self->{elems};
+#  my $elems    = $self->{elems};
   my %matrix;
   while (my ($rowElem, $rowContents) = each(%rows)) {
     my $matrixRow  = {};
