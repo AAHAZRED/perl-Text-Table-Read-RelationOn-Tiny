@@ -1,5 +1,14 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+v2.0.0     2021/06/25
+           Completely reworked code.
+           Removed methods x_elem_ids, n_elems and bless_matrix
+           Added methods tab_elems matrix_named
+           Constructor argument set with subarray: changed structure of elem_ids and elems
+           Constructor: added named argument 'eqs'
+           Method get: added named argument 'allow_subset'
+           Method matrix: added named argument 'bless'
+
 v1.2.0     2021/06/13
            Added method bless_matrix.
 
