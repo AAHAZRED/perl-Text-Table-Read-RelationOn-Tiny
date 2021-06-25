@@ -47,7 +47,7 @@ use Text::Table::Read::RelationOn::Tiny;
     note("Same order of elements");
     my $input = <<'EOT';
 
-      | x\y     | this | that | foo bar | empty |
+      | x\\y    | this | that | foo bar | empty |
       |---------+------+------+---------+-------|
       | this    | X    |      | X       |       |
       |---------+------+------+---------+-------|
@@ -101,7 +101,7 @@ EOT
 
 
   my $input = <<'EOT';
-      | x\y | a | b | c | d |
+      |     | a | b | c | d |
       |-----+---+---+---+---|
       | a   | X | X | X | X |
       |-----+---+---+---+---|
@@ -143,7 +143,7 @@ EOT
            );
 
   note("allow_subset");
-  $obj->get(src => ["| x\y | a |",
+  $obj->get(src => ["|  *  | a |",
                     "| a   | X |"
                    ],
             allow_subset => 1

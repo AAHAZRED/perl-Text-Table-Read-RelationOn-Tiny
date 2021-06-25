@@ -146,7 +146,7 @@ EOT
            );
 
   note("allow_subset");
-  $obj->get(src => ["| x\y | a |",
+  $obj->get(src => ["| x:y | a |",
                     "| a   | X |"
                    ],
             allow_subset => 1
