@@ -338,7 +338,7 @@ Version v2.0.0
 
     use Text::Table::Read::RelationOn::Tiny;
 
-    my $obj = Text::Table::Read::RelationOn::Tiny
+    my $obj = Text::Table::Read::RelationOn::Tiny->new();
     my ($matrix, $elems, $ids) = $obj->get('my-table.txt');
 
 
@@ -385,24 +385,23 @@ The hotizontal rules are optional.
 
 =item *
 
-There is not something like a format check for the horizontal rules. Any line
-starting with C<|-> is simply ignored, regardless of the other subsequent
-characters, if any. Also, the C<|> need not to be aligned, and heading spaces
-are ignored.
+There is not something like a format check for the horizontal rules or
+alignment. Any line starting with C<|-> is simply ignored, regardless of the
+other subsequent characters, if any. Also, the C<|> need not to be aligned,
+and heading spaces are ignored.
 
 =item *
 
-The entries (names) in the header line are the set's element names and thus,
-they must be unique. One of these names may be the empty string. Names my
-contain spaces or punctuation chars. The C<|>, of course, cannot be part of a
-name.
-
+Unless you specified a base set in the construcor call, the entries (names) in
+the table's header line are the set's element names. Of course, they must be
+unique. One of these names may be the empty string. Names my contain spaces or
+punctuation chars. The C<|>, of course, cannot be part of a name.
 
 =item *
 
 The names of the columns (header line) and the rows (first entry of each row)
 must be unique, but they don't have to appear in the same order. By default,
-the set of the header names and the set of the row names mudt be equal, but
+the set of the header names and the set of the row names must be equal, but
 this can be chaned by argument C<allow_subset> of method C<get>.
 
 =back
@@ -435,17 +434,17 @@ Default is the empty set.
 =item C<set>
 
 If specified, then this must be an array of unique strings specifying the
-elements of the set for your relation. When the constructor was called with
-this argument, then method C<elems> will return a reference to a copy of it,
-and C<elem_ids> will return a hash mapping each element to its array index
-(otherwise both methods would return C<undef> before the first call to
-C<get>).
+elements of the set for your relation (it may also contain arrays, see
+below). When the constructor was called with this argument, then method
+C<elems> will return a reference to a copy of it, and C<elem_ids> will return
+a hash mapping each element to its array index (otherwise both methods would
+return C<undef> before the first call to C<get>).
 
 Method C<get> will check if the elements in the input table are the same as
 those specified in the array. Furthermore, the indices in C<matrix> will
-always refere to the indices in the C<set> array, and C<elems> and C<elem_ids>
-will always return the same, regardless of the order of rows and columns in
-the input table.
+always refere to the indices in the C<elems> array constructd from C<set>, and
+C<elems> and C<elem_ids> will always return the same, regardless of the order
+of rows and columns in the input table.
 
 It may happen that there are elements that are identical with respect to the
 relation and you do not want to write duplicate rows and columns in your
@@ -477,31 +476,54 @@ Method C<elem_ids> will return:
    'd'  => '7'
    }
 
+Method C<tab_elems> will return:
+
+   {
+    a => 0,
+    b => 4,
+    c => 5,
+    d => 7
+    }
+
+And method C<eq_ids> will return:
+
+   0 => [1, 2, 3],
+   5 => [6]
+
+=item C<eqs>
+
+This argument takes a reference to an array of array references. It can only
+be used if argument C<set> is specified, too. If C<eqs> is specified, then the
+array passed via C<set> cannot contain arrays again.
+
+This constructor call:
+
+   Text::Table::Read::RelationOn::Tiny->new(set => [qw(a a1 a2 a3 b c c1 d)],
+                                            eqs => [[qw(a a1 a2 a3)],
+                                                    [qw(c c1)]]);
+
+produces the same as this (see description of argument C<set>):
+
+   Text::Table::Read::RelationOn::Tiny->new(set => [[qw(a a1 a2 a3)], 'b',
+                                                    [qw(c c1)], 'd']);
+
+However, the benefit of C<eqs> is that you can separate the declaration of the
+base set and the equivalent elements, meaning that you can enforce an order of
+the elements independent from what elements are equivalent in your relation.
 
 =back
-
-If you specify both arguments, then their vaules must be different.
 
 
 =head3 get
 
-The method reads and parses a table. It takes exactly one argument which may
-be either a file name, an array reference or a string containing newline
-characters.
+The method reads and parses a table. It takes two named arguments.
 
 =over
 
 =item C<src>
 
 Mandatory. The source from which the table is to be read. May be either a file
-name, an array reference or a string containing newline characters.
-
-=item C<allow_subset>
-
-Optional. Take a boolean value. If I<true>, then rows and columns
-
-=back
-
+name, an array reference or a string containing newline characters. 
 
 =over
 
@@ -521,25 +543,30 @@ that file.
 
 =back
 
+=item C<allow_subset>
+
+Optional. Take a boolean value. If I<true>, then rows and columns need not to
+be equal and may contain a subset of the relation's base set only. This way
+you can omit rows and columns not containing any incidences.
+
+=back
+
 Note that the method will stop parsing if it recognizes a line containing not
 any non-white character and will ignore any subsequent lines.
 
-B<Parsing>
+If you did not specify a base set in the constructor call, then C<get> will
+create the set from the table. Then, it creates a hash of hashes representing
+the relation (incidence matrix): each key is an integer which is an index in
+the element array created before. Each corresponding value is again a hash
+where the keys are the array indices of the elements being in relation; the
+values do not matter and are always C<undef>. This hash will never contain
+empty subhashes. (you can obtain this hash from the returned list or from
+method C<matrix>).
 
-When parsing a table, the method first creates an array of set element names
-from the table's header line (you can obtain this array from the returned list
-or from method C<elems>).
+C<get> will add identical rows and columns to the resulting incidence matrix
+for elements that have been specified to be equivalent (see description of
+C<new>).
 
-It then creates a hash whose keys are the element names and each value is the
-index in the element array just mentioned (you can obtain this hash from
-the returned list or from method C<elem_ids>).
-
-Finally, it creates a hash of hashes representing the relation (incidence
-matrix): each key is an integer which is an index in the element array created
-before. Each corresponding value is again a hash where the keys are the array
-indices of the elements being in relation; the values do not matter and are
-always C<undef>. This hash will never contain empty subhashes. (you can obtain
-this hash from the returned list or from method C<matrix>).
 
 B<Example>
 
@@ -613,11 +640,10 @@ Returns the current value of C<inc>. See description of C<new>.
 Returns the current value of C<noinc>. See description of C<new>.
 
 
-=head3 C<matrix>
+=head3 C<prespec>
 
-Returns the incidence matrix (reference to a hash of hashes) produced by the
-most recent call of C<get>, or C<undef> if you did not yet call C<get> for the
-current object. See description of C<get>.
+Returns 1 (true) if you specified constructor argument C<set> when calling the
+constructor, otherwise it returns an empty string (false).
 
 
 =head3 C<elems>
@@ -627,46 +653,80 @@ line), or C<undef> if you did neither call C<get> for the current object nor
 specified option C<set> when calling the constructor. See description of
 C<get> and C<new>.
 
+B<Note>: This returns a reference to an internal member, so do not change the
+contents!
+
 
 =head3 C<elem_ids>
 
 Returns a reference to a hash mapping elements to ids (indices in array
 returned by C<elems>), or C<undef> if you did neither call C<get> for the
-current object nor specified argument C<set> when calling the constructor. If
-you used constructor argument C<set> to specify duplicates, then the
-duplicates are mapped to the same index (especially each index is smaller than
-the return value of XXXXXXXXXXXXXX). See description of C<get> and C<new>.
+current object nor specified argument C<set> when calling the constructor.
+
+B<Note>: This returns a reference to an internal member, so do not change the
+contents!
 
 
-=head3 C<prespec>
+=head3 C<tab_elems>
 
-Returns 1 (true) if you specified constructor argument C<set> when calling the
-constructor, otherwise it returns an empty string (false).
+Returns a reference to a hash whose keys are the elements that may appear in
+the table. If you did not specify equivalent elements (see description of
+C<new>), then the contents of this hash is identical with C<elem_ids>.
+
+B<Note>: This returns a reference to an internal member, so do not change the
+contents!
 
 
-=head3 C<bless_matrix>
+=head3 C<eq_ids>
 
-Blesses C<matrix> with
-C<Text::Table::Read::RelationOn::Tiny::_Relation_Matrix> and for convenience
-also returns it. Then you can use C<matrix> as an object having exactly one
-method named C<related>. This method again takes two arguments (integers) and
-check if these are related with respect to the incidence C<matrix>. Note that
-c<related> does not do any parameter check.
+Returns a reference to a hash. If you specified equivalent elements (see
+description of C<new>), then the keys are the indices (see C<elem_ids> and
+C<elems>) of the representants and each value is an array of indices of the
+corresponding equivalent elements (without the representant).
+
+If you did not specify equivalent elements, the this method return C<undef>
+after the constructor call, but the first call to C<get> sets it to an empty
+hash.
+
+B<Note>: This returns a reference to an internal member, so do not change the
+contents!
+
+
+=head3 C<matrix>
+
+Returns the incidence matrix (reference to a hash of hashes) produced by the
+most recent call of C<get>, or C<undef> if you did not yet call C<get> for the
+current object. See description of C<get>.
+
+It takes a single optional boolean named argument C<bless>. If true, then the
+matrix is blessed with
+C<Text::Table::Read::RelationOn::Tiny::_Relation_Matrix> Then you can use the
+matrix as an object having exactly one method named C<related>. This method
+again takes two arguments (integers) and check if these are related with
+respect to the incidence C<matrix>. Note that c<related> does not do any
+parameter check.
 
 Example:
 
   $rel_obj->bless_matrix;
-  my $matrix = $rel_obj->matrix;
+  my $matrix = $rel_obj->matrix(bless => 1);
   if ($matrix->related(2, 5)) {
     # ...
   }
 
-or shorter:
+B<Note>: This returns a reference to an internal member, so do not change the
+contents!
 
-  my $matrix = $rel_obj->bless_matrix;
-  if ($matrix->related(2, 5)) {
-    # ...
-  }
+
+=head3 C<matrix_named>
+
+Returns an incidence matrix just as C<matrix> does, but the keys are the
+element names rather than their indices It takes a single optional boolean
+named argument C<bless> doing a job corresponding to the C<bless> argument of
+C<matrix>.
+
+B<Note>: Unlike C<matrix> the matrix returned by C<matrix_named> is not a data
+member and thus it is computed everytime you call thie method.
 
 
 =head1 AUTHOR
