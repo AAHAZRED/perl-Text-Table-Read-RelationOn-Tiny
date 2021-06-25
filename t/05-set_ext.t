@@ -48,6 +48,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
 
   is_deeply($obj->elems,      \@set_elems,    "elems()");
   is_deeply($obj->elem_ids,   \%expected_ids, "elem_ids()");
+  is_deeply($obj->eq_ids,     {},             "eq_ids");
   {
     note("Same order of elements");
     my $input = <<'EOT';
@@ -81,7 +82,7 @@ EOT
 
 {
   my @set_array = ([qw(a a1 a2 a3)], 'b', [qw(c c1)], ['d']);
-  my @set_elems = ( qw(a a1 a2 a3 b c c1 d) );
+  my @set_elems = ( qw(a a1 a2 a3     b       c c1      d) );
   my $elem_ids_expected = {'a'  => 0,
                            'a1' => 1,
                            'a2' => 2,
@@ -101,7 +102,9 @@ EOT
   is_deeply($obj->elems, \@set_elems, 'elems()');
   is_deeply($obj->elem_ids, $elem_ids_expected, 'elem_ids()');
   is_deeply($obj->tab_elems, $tab_elems_expected, 'tab_elems()');
-
+  is_deeply($obj->eq_ids, {0 => [1, 2, 3],
+                           5 => [6]},
+            'eq_ids');
 
   my $input = <<'EOT';
       | x\y | a | b | c | d |
@@ -124,18 +127,18 @@ EOT
 
   is_deeply($obj->matrix, {
                            0 => {
-                                 0 => undef,
+                                 0 => undef, 1 => undef, 2 => undef, 3 => undef,
                                  4 => undef,
-                                 5 => undef,
+                                 5 => undef, 6 => undef,
                                  7 => undef
                                 },
                            4 => {
                                  4 => undef,
-                                 5 => undef,
+                                 5 => undef, 6 => undef,
                                  7 => undef
                                   },
                            5 => {
-                                 5 => undef,
+                                 5 => undef, 6 => undef,
                                  7 => undef
                                   },
                            7 => {
@@ -154,7 +157,11 @@ EOT
 
   is_deeply($obj->elem_ids, $elem_ids_expected, 'elem_ids() not changed');
   is_deeply($obj->tab_elems, $tab_elems_expected, 'tab_elems() not changed');
-  is_deeply($obj->matrix, {0 => {0 => undef}}, 'matrix()');
+  is_deeply($obj->matrix, {0 => {0 => undef,
+                                 1 => undef,
+                                 2 => undef,
+                                 3 => undef
+                                }}, 'matrix()');
 }
 
 

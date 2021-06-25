@@ -50,7 +50,7 @@ sub new {
         confess("set: subentry must be a defined scalar") if ref($ent_0) || !defined($ent_0);
         push(@elems, $ent_0);
         confess("set: '$ent_0': duplicate element") if exists($ids{$ent_0});
-        $ids{$ent_0} = $tabElems{$ent_0} = $#elems;
+        $ids{$ent_0} = $#elems;
         for (my $j = 1; $j < @$entry; ++$j) {
           my $ent_j = $entry->[$j];
           confess("set: subentry must be a defined scalar") if ref($ent_j) || !defined($ent_j);
@@ -62,19 +62,24 @@ sub new {
       } else {
         confess("set: '$entry': duplicate entry") if exists($ids{$entry});
         push(@elems, $entry);
-        $ids{$entry} = $tabElems{$entry} = $#elems;
+        $ids{$entry} = $#elems;
       }
     }
+    %tabElems = %ids;
     confess("Internal error") if (defined($eqs) && @eqs_tmp); # Should never happen.
     $eqs = \@eqs_tmp if @eqs_tmp;
     if (defined($eqs)) {
       confess("eqs: must be an array ref") if ref($eqs) ne 'ARRAY';
+      my %seen;
       foreach my $eqArray (@{$eqs}) {
         confess("eqs: each entry must be an array ref") if ref($eqArray) ne 'ARRAY';
         next if !@{$eqArray};
         foreach my $entry (@{$eqArray}) {
           confess("eqs: subentry contains a non-scalar") if ref($entry);
           confess("eqs: subentry undefined")             if !defined($entry);
+          confess("eqs: '$entry': unknown element")      if !exists($ids{$entry});  ### !!!
+          confess("eqs: '$entry': duplicate element")    if exists($seen{$entry});  ### !!!
+          $seen{$entry} = undef;
         }
         next if @{$eqArray} == 1;
         my @tmp = @{$eqArray};
@@ -204,14 +209,29 @@ my $_parse_table = sub {
     @{$self}{qw(elems elem_ids tab_elems eq_ids)} = ($h_elems, $h_ids, \%tmp, {});
     $elem_ids = $h_ids;
   }
-#  my $elems    = $self->{elems};
+  my $eq_ids = $self->{eq_ids}//die;
   my %matrix;
   while (my ($rowElem, $rowContents) = each(%rows)) {
-    my $matrixRow  = {};
+    my %new_row;
     for (my $i = 0; $i < @{$rowContents}; $i++) {
-      $matrixRow->{$elem_ids->{$h_elems->[$i]}} = undef if $rowContents->[$i];
+      if ($rowContents->[$i]) {
+        my $e_id = $elem_ids->{$h_elems->[$i]};
+        $new_row{$e_id} = undef;
+        if (exists($eq_ids->{$e_id})) {
+          foreach my $eq_id (@{$eq_ids->{$e_id}}) {
+            $new_row{$eq_id} = undef
+          }
+        }
+      }
     }
-    $matrix{$elem_ids->{$rowElem}} = $matrixRow if %{$matrixRow};
+    if (%new_row) {
+      $matrix{$elem_ids->{$rowElem}} = \%new_row;
+      if (exists($eq_ids->{$rowElem})) {
+        foreach my $eq_id (@{$eq_ids->{$rowElem}}) {
+          $matrix{$eq_id} = {%new_row};
+        }
+      }
+    }
   }
   $self->{matrix} = \%matrix;
   return;
@@ -252,6 +272,7 @@ sub prespec     {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
 sub elems       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
 sub elem_ids    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
 sub tab_elems   {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{tab_elems};}
+sub eq_ids      {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{eq_ids};}
 
 
 sub matrix {
@@ -366,23 +387,23 @@ The hotizontal rules are optional.
 
 There is not something like a format check for the horizontal rules. Any line
 starting with C<|-> is simply ignored, regardless of the other subsequent
-characters, if any.
+characters, if any. Also, the C<|> need not to be aligned, and heading spaces
+are ignored.
 
 =item *
 
-The entries (names) in the header line are the set's element names. One of
-these names may be the empty string.
+The entries (names) in the header line are the set's element names and thus,
+they must be unique. One of these names may be the empty string. Names my
+contain spaces or punctuation chars. The C<|>, of course, cannot be part of a
+name.
 
 
 =item *
 
 The names of the columns (header line) and the rows (first entry of each row)
-need to be the same and they must be unique, but they don't have to appear in the
-same order.
-
-=item *
-
-Spaces at the beginning of a line are ignored.
+must be unique, but they don't have to appear in the same order. By default,
+the set of the header names and the set of the row names mudt be equal, but
+this can be chaned by argument C<allow_subset> of method C<get>.
 
 =back
 
@@ -398,12 +419,18 @@ The constructor take the following optional named scalar arguments:
 =item C<inc>
 
 A string. Table entry that flags that the corresponding elements are
-related. Default is "X".
+related. C<|> is not allowed, the value must be different from value of
+C<noinc>.
+
+Default is "X".
 
 =item C<noinc>
 
 A string. Table entry that flags that the corresponding elements are B<not>
-related. Default is the empty set.
+related. C<|> is not allowed, the value must be different from value of
+C<inc>.
+
+Default is the empty set.
 
 =item C<set>
 
@@ -423,7 +450,7 @@ the input table.
 It may happen that there are elements that are identical with respect to the
 relation and you do not want to write duplicate rows and columns in your
 table. To cover such a case, it is allowed that entries of C<set> are array
-references again.
+references again (another was is using argument C<eqs>).
 
 Example:
 
@@ -432,18 +459,23 @@ Example:
 In this case, the elements you write in your table are C<a>, C<b>, C<c>, and
 C<d> (in case of a subarray always the first element is taken). Method C<get>
 will add corresponding rows and columns for C<a1>, C<a2>, C<a3>, and C<c1> to
-the incidence matrix. Method C<elems> will return this (note the order of the
-elements):
+the incidence matrix. Method C<elems> will return this (the nested arrays are
+flattened):
 
-  [a b c d a1 a2 a3 c1]
+  [qw(a a1 a2 a3 b c c1 d)]
 
 Method C<elem_ids> will return:
 
-  { a => 0, a1 => 0, a2 => 0, a3 => 0,
-    b => 1,
-    c => 2, c1 => 2,
-    d => 3
-  }
+  {
+   'a'  => '0',
+   'a1' => '1',
+   'a2' => '2',
+   'a3' => '3',
+   'b'  => '4',
+   'c'  => '5',
+   'c1' => '6',
+   'd'  => '7'
+   }
 
 
 =back
