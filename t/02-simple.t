@@ -24,6 +24,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   is($obj->elems,      undef, 'elems()');
   is($obj->elem_ids,   undef, 'elem_ids()');
   is($obj->tab_elems,  undef, 'tab_elems()');
+  is($obj->eq_ids,     undef, 'eq_ids()');
 
   is($obj->matrix_named,             undef, 'matrix_named()');
   is($obj->matrix_named(bless => 1), undef, 'matrix_named(bless => 1)');
@@ -36,6 +37,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
     is_deeply($obj->elems,     [], 'elems(): empty array');
     is_deeply($obj->elem_ids,  {}, 'elem_ids(): empty hash');
     is_deeply($obj->tab_elems, {}, 'tab_elems(): empty hash');
+    is_deeply($obj->eq_ids,    {}, 'eq_ids()');
     ok(!$obj->prespec, "prespec() still returns false");
 
     is_deeply($obj->matrix_named, {}, 'matrix_named()');
@@ -98,6 +100,7 @@ use constant TEST_DIR => catdir(dirname(__FILE__), 'test-data');
   is($obj->elems,     undef, 'elems()');
   is($obj->elem_ids,  undef, 'elem_ids()');
   is($obj->tab_elems, undef, 'tab_elems()');
+  is($obj->eq_ids,    undef, 'eq_ids()');
   ok(!$obj->prespec, "prespec() returns false");
   {
     note("Single element input / non empty relation");
@@ -119,6 +122,7 @@ EOT
     is_deeply($elems,          ['Foo'],             'elems()');
     is_deeply($elem_ids,       {Foo => 0},          'elem_ids()');
     is_deeply($obj->tab_elems, {Foo => 0},          'tab_elems()');
+    is_deeply($obj->eq_ids,    {}, 'eq_ids()');
   }
   {
     note("Single element input / empty relation");
@@ -140,6 +144,7 @@ EOT
     is_deeply($elems,          ['Foo'],    'elems()');
     is_deeply($elem_ids,       {Foo => 0}, 'elem_ids()');
     is_deeply($obj->tab_elems, {Foo => 0}, 'tab_elems()');
+    is_deeply($obj->eq_ids,    {}, 'eq_ids()');
 
     note("Same, but empty name");
     $input = <<'EOT';
@@ -202,6 +207,7 @@ EOT
               'Return values of get(STRING) in list context'
              );
     is($input, $input_bak, "Input string not changed");
+    is_deeply($obj->eq_ids,    {}, 'eq_ids()');
 
     my @input_array = split(/\n/, $input);
     my @input_array_bak = @input_array;
@@ -267,6 +273,7 @@ EOT
     is_deeply($obj->elems,     $expected{elems},    'elems()');
     is_deeply($obj->elem_ids,  $expected{elem_ids}, 'elem_ids()');
     is_deeply($obj->tab_elems, $expected{elem_ids}, 'tab_elems()');
+    is_deeply($obj->eq_ids,    {},                  'eq_ids()');
 
     note("Same input, but with 'weird' use of horizontal rules");
     $obj->get(src => catfile(TEST_DIR, '02-table-weird.txt'));
@@ -274,6 +281,7 @@ EOT
     is_deeply($obj->elems,     $expected{elems},    'elems()');
     is_deeply($obj->elem_ids,  $expected{elem_ids}, 'elem_ids()');
     is_deeply($obj->tab_elems, $expected{elem_ids}, 'tab_elems()');
+    is_deeply($obj->eq_ids,    {},                  'eq_ids()');
   }
 }
 
@@ -303,6 +311,7 @@ EOT
                                 }
                           },
             'matrix');
+  is_deeply($obj->eq_ids, {}, 'eq_ids()');
 
   note(" --- 2.");
   $obj->get(src => [
@@ -319,6 +328,7 @@ EOT
                                 }
                           },
             'matrix');
+  is_deeply($obj->eq_ids, {}, 'eq_ids()');
 
   note(" --- 3. - no rows");
   $obj->get(src => [
@@ -329,6 +339,7 @@ EOT
   is_deeply($obj->elem_ids, {a => 0, b => 1}, 'elem_ids');
   is_deeply($obj->tab_elems, $obj->elem_ids, 'tab_elems');
   is_deeply($obj->matrix, {}, 'matrix');
+  is_deeply($obj->eq_ids, {}, 'eq_ids()');
 
   note(" --- 4. - no columns");
   $obj->get(src => [
@@ -344,6 +355,7 @@ EOT
   is_deeply($obj->elem_ids, {a => 0, b => 1}, 'elem_ids');
   is_deeply($obj->tab_elems, $obj->elem_ids, 'tab_elems');
   is_deeply($obj->matrix, {}, 'matrix');
+  is_deeply($obj->eq_ids, {}, 'eq_ids()');
 }
 
 #==================================================================================================

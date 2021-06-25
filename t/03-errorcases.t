@@ -78,6 +78,18 @@ sub err_like(&$);
   err_like {RELATION_ON->new(set => [1, 2], eqs => [[], [1, undef, 2]])}
     qr/^eqs: subentry undefined/;
 
+  err_like {RELATION_ON->new(set => [1, 2, 3], eqs => [[3], [27, 42]])}
+    qr/^eqs: '27': unknown element/;
+
+  err_like {RELATION_ON->new(set => [1, 2, 3], eqs => [[3], [1, 42]])}
+    qr/^eqs: '42': unknown element/;
+
+  err_like {RELATION_ON->new(set => [1, 2, 3], eqs => [[2, 3], [1, 3]])}
+    qr/^eqs: '3': duplicate element/;
+
+  err_like {RELATION_ON->new(set => [1, 2, 3], eqs => [[3], [1, 3]])}
+    qr/^eqs: '3': duplicate element/;
+
   err_like {RELATION_ON->new(eqs => [[0], [1, undef, 2]])}
     qr/^eqs: not allowed without argument 'set'/;
 }
