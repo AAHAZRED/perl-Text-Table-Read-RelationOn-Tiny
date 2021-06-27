@@ -17,11 +17,12 @@ sub new {
   $class = ref($class) if ref($class);
   confess("Odd number of arguments") if @_ % 2;
   my %args = @_;
-  my $inc   = delete $args{inc}   // "X";
-  my $noinc = delete $args{noinc} // "";
-  my $set   = delete $args{set};
-  my $eqs   = delete $args{eqs};
-
+  my $inc      = delete $args{inc}   // "X";
+  my $noinc    = delete $args{noinc} // "";
+  my $set      = delete $args{set};
+  my $eqs      = delete $args{eqs};
+  my $ext      = delete $args{ext};
+  my $elem_ids = delete $args{elem_ids};
   confess(join(", ", sort(keys(%args))) . ": unexpected argument") if %args;
   confess("inc: must be a scalar")               if ref($inc);
   confess("noinc: must be a scalar")             if ref($noinc);
@@ -32,6 +33,26 @@ sub new {
   my $self = {inc    => $inc,
               noinc  => $noinc,
              };
+  if (defined($set)) {
+    confess("set: must be an array reference") if ref($set) ne 'ARRAY';
+    $self->{prespec} = 1;
+  } else {
+    confess("eqs: not allowed without argument 'set'") if defined($eqs);
+    $self->{prespec} = "";
+  }
+  if ($ext) {
+    if ($set) {
+      if ($elem_ids) {
+        foreach my (@$elem_ids) {
+          
+        }
+      } else {
+        
+      }
+    } else {
+      confess("ext: not allowed without argument 'set'")
+    }
+  }
   if (ref($set) eq 'ARRAY') {
     my @elems;                         # elems
     my %tabElems;                      # elmes to be used in table --> indes in @elems
@@ -39,7 +60,6 @@ sub new {
     my %ids;                           # indices in basic elems
     my @eqs_tmp;
 
-    $self->{prespec} = 1;
     for (my $i = 0; $i < @$set; ++$i) {
       my $entry = $set->[$i];
       confess("set: entry $i: invalid") if !defined($entry);
@@ -92,11 +112,6 @@ sub new {
       }
     }
     @{$self}{qw(elems elem_ids tab_elems eq_ids)} = (\@elems, \%ids, \%tabElems, \%eqIds);
-  } elsif (defined($set)) {
-    confess("set: must be an array reference");
-  } else {
-    $self->{prespec} = "";
-    confess("eqs: not allowed without argument 'set'") if defined($eqs);
   }
   return bless($self, $class);
 }
@@ -167,7 +182,7 @@ my $_parse_table = sub {
   my ($h_elems, $h_ids) = _parse_header_f($lines->[$index++]);
   my $elem_ids;
   my %rows;
-  my @rowElems;
+  my @rowElems;                 # To keep oder of additional roe elements, if any.
   for (; $index < @$lines; ++$index) {
     (my $line = $lines->[$index]) =~ s/^\s+//;
     last if $line eq q{};
