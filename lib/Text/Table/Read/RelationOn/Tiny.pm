@@ -9,7 +9,7 @@ use Carp qw(confess);
 
 # The following must be on the same line to ensure that $VERSION is read
 # correctly by PAUSE and installer tools. See docu of 'version'.
-use version 0.77; our $VERSION = version->declare("v2.0.0");
+use version 0.77; our $VERSION = version->declare("v2.0.1");
 
 
 sub new {
@@ -21,6 +21,7 @@ sub new {
   my $noinc = delete $args{noinc} // "";
   my $set   = delete $args{set};
   my $eqs   = delete $args{eqs};
+
   confess(join(", ", sort(keys(%args))) . ": unexpected argument") if %args;
   confess("inc: must be a scalar")               if ref($inc);
   confess("noinc: must be a scalar")             if ref($noinc);
@@ -166,6 +167,7 @@ my $_parse_table = sub {
   my ($h_elems, $h_ids) = _parse_header_f($lines->[$index++]);
   my $elem_ids;
   my %rows;
+  my @rowElems;
   for (; $index < @$lines; ++$index) {
     (my $line = $lines->[$index]) =~ s/^\s+//;
     last if $line eq q{};
@@ -174,6 +176,7 @@ my $_parse_table = sub {
     my ($rowElem, $rowContent) = $self->$_parse_row($line);
     die("'$rowElem': duplicate element in first column") if exists($rows{$rowElem});
     $rows{$rowElem} = $rowContent;
+    push(@rowElems, $rowElem);
   }
   if ($self->{prespec}) {
     my $tab_elems = $self->{tab_elems};
@@ -192,10 +195,10 @@ my $_parse_table = sub {
     }
   } else {
     if ($allow_subset) {
-      foreach my $elem (keys(%rows)) {
-        if (!exists($h_ids->{$elem})) {
-          $h_ids->{$elem} = @{$h_elems};
-          push(@{$h_elems}, $elem);
+      foreach my $rowElem (@rowElems) {
+        if (!exists($h_ids->{$rowElem})) {
+          $h_ids->{$rowElem} = @{$h_elems};
+          push(@{$h_elems}, $rowElem);
         }
       }
     } else {
@@ -331,7 +334,7 @@ Text::Table::Read::RelationOn::Tiny - Read binary "relation on (over) a set" fro
 
 =head1 VERSION
 
-Version v2.0.0
+Version v2.0.1
 
 
 =head1 SYNOPSIS
@@ -419,7 +422,7 @@ The constructor take the following optional named scalar arguments:
 
 A string. Table entry that flags that the corresponding elements are
 related. C<|> is not allowed, the value must be different from value of
-C<noinc>.
+C<noinc>. Heading and trailing spaces are removed.
 
 Default is "X".
 
@@ -427,7 +430,7 @@ Default is "X".
 
 A string. Table entry that flags that the corresponding elements are B<not>
 related. C<|> is not allowed, the value must be different from value of
-C<inc>.
+C<inc>. Heading and trailing spaces are removed.
 
 Default is the empty set.
 
