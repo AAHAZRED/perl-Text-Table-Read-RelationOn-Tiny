@@ -32,11 +32,11 @@ sub err_like(&$);
 
   err_like {RELATION_ON->new(set => {})}                qr/^set: must be an array reference/;
 
-  err_like {RELATION_ON->new(set => [1, undef, 3])}     qr/^set: entry 1: invalid/;
-  err_like {RELATION_ON->new(set => [{}, 2, 3])}        qr/^set: entry 0: invalid/;
+  err_like {RELATION_ON->new(set => [1, undef, 3])}     qr/^set: entry 2: invalid/;
+  err_like {RELATION_ON->new(set => [{}, 2, 3])}        qr/^set: entry 1: invalid/;
 
   err_like {RELATION_ON->new(set => [1, [], 3])}
-    qr/^set: entry 1: array entry must not be empty/;
+    qr/^set: entry 2: array entry must not be empty/;
 
   err_like {RELATION_ON->new(set => [1, [2, 4, 5], [4, 3]])}
     qr/^set: '4': duplicate element/;
@@ -50,22 +50,22 @@ sub err_like(&$);
   err_like {RELATION_ON->new(set => [1, [2, 5], -1, [3, 4, 27, 4, 'xx'], 42])}
     qr/^set: '4': duplicate element/;
 
-  err_like {RELATION_ON->new(set => [qw(a b c b)])}     qr/^set: 'b': duplicate entry/;
+  err_like {RELATION_ON->new(set => [qw(a b c b)])}     qr/^set: 'b': duplicate element/;
 
   err_like {RELATION_ON->new(set => [1, [2, 3]], eqs => [])}
-    qr/^set: array not allowed if eqs is specified/;
+    qr/^set: entry 2: array not allowed if eqs is specified/;
 
   err_like {RELATION_ON->new(set => [1, [], 2])}
-    qr/^set: entry 1: array entry must not be empty/;
+    qr/^set: entry 2: array entry must not be empty/;
 
   err_like {RELATION_ON->new(set => [1, [{}, 2, 3]])}
-    qr/^set: subentry must be a defined scalar/;
+    qr/^set: entry 2: subarray contains invalid entry/;
 
   err_like {RELATION_ON->new(set => [1, [2, {}, 3]])}
-    qr/^set: subentry must be a defined scalar/;
+    qr/^set: entry 2: subarray contains invalid entry/;
 
   err_like {RELATION_ON->new(set => [1, [2, undef, 3]])}
-    qr/^set: subentry must be a defined scalar/;
+    qr/^set: entry 2: subarray contains invalid entry/;
 
   err_like {RELATION_ON->new(set => [1, 2], eqs => {})} qr/^eqs: must be an array ref/;
 
