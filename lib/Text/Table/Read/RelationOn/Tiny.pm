@@ -34,54 +34,66 @@ sub new {
               noinc  => $noinc,
              };
   if (defined($set)) {
+    my %seen;
     confess("set: must be an array reference") if ref($set) ne 'ARRAY';
+    my $cnt = 1;
+    foreach my $e (@$set) {
+      if (ref($e)) {
+        confess("set: entry $cnt: invalid") if ref($e) ne 'ARRAY';
+        confess("set: entry $cnt: array not allowed if eqs is specified") if $eqs;
+        confess("set: entry $cnt: array entry must not be empty") if !@{$e};
+        foreach my $sub_e (@$e) {
+          confess("set: entry $cnt: subarray contains invalid entry")
+            if ref($sub_e) || !defined($sub_e);
+          confess("set: '$sub_e': duplicate element") if exists($seen{$sub_e});
+          $seen{$sub_e} = undef;
+        }
+      } else {
+        confess("set: entry $cnt: invalid") if !defined($e);
+        confess("set: '$e': duplicate element") if exists($seen{$e});
+        $seen{$e} = undef;
+      }
+      ++$cnt;
+    }
     $self->{prespec} = 1;
   } else {
     confess("eqs: not allowed without argument 'set'") if defined($eqs);
     $self->{prespec} = "";
   }
-  if ($ext) {
-    if ($set) {
-      if ($elem_ids) {
-        foreach my (@$elem_ids) {
+  # if ($ext) {
+  #   if ($set) {
+  #     foreach my $e (@$set) {
+  #       confess("set: no subarray allowed if 'ext' is specified")
+  #     }
+  #     if ($elem_ids) {
+  #       foreach my (@$elem_ids) {
           
-        }
-      } else {
+  #       }
+  #     } else {
         
-      }
-    } else {
-      confess("ext: not allowed without argument 'set'")
-    }
-  }
-  if (ref($set) eq 'ARRAY') {
+  #     }
+  #   } else {
+  #     confess("ext: not allowed without argument 'set'")
+  #   }
+  # }
+  if (ref($set)) {
     my @elems;                         # elems
     my %tabElems;                      # elmes to be used in table --> indes in @elems
     my %eqIds;                         # idx => array of equivalent idxes
     my %ids;                           # indices in basic elems
     my @eqs_tmp;
 
-    for (my $i = 0; $i < @$set; ++$i) {
-      my $entry = $set->[$i];
-      confess("set: entry $i: invalid") if !defined($entry);
+    foreach my $entry (@$set) {
       if (ref($entry)) {
-        confess("set: entry $i: invalid") if ref($entry) ne 'ARRAY';
-        confess("set: array not allowed if eqs is specified") if $eqs;
-        confess("set: entry $i: array entry must not be empty") if !@{$entry};
-        my $ent_0 = $entry->[0];
-        confess("set: subentry must be a defined scalar") if ref($ent_0) || !defined($ent_0);
-        push(@elems, $ent_0);
-        confess("set: '$ent_0': duplicate element") if exists($ids{$ent_0});
-        $ids{$ent_0} = $#elems;
+        push(@elems, $entry->[0]);
+        $ids{$entry->[0]} = $#elems;
         for (my $j = 1; $j < @$entry; ++$j) {
           my $ent_j = $entry->[$j];
-          confess("set: subentry must be a defined scalar") if ref($ent_j) || !defined($ent_j);
-          confess("set: '$ent_j': duplicate element") if exists($ids{$ent_j});
           push(@elems, $ent_j);
           $ids{$ent_j} = $#elems;
         }
         push(@eqs_tmp, $entry) if @$entry > 1;
       } else {
-        confess("set: '$entry': duplicate entry") if exists($ids{$entry});
         push(@elems, $entry);
         $ids{$entry} = $#elems;
       }
