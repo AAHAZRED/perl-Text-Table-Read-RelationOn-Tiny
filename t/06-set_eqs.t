@@ -117,7 +117,6 @@ EOT
       | d   |   |   |   | X |
       |-----+---+---+---+---|
 EOT
-  #Don't append a semicolon to the line above!
 
   $obj->get(src => $input);
 

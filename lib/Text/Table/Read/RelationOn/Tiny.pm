@@ -9,7 +9,7 @@ use Carp qw(confess);
 
 # The following must be on the same line to ensure that $VERSION is read
 # correctly by PAUSE and installer tools. See docu of 'version'.
-use version 0.77; our $VERSION = version->declare("v2.0.1");
+use version 0.77; our $VERSION = version->declare("v2.1.0");
 
 
 sub new {
@@ -60,26 +60,39 @@ sub new {
     confess("eqs: not allowed without argument 'set'") if defined($eqs);
     $self->{prespec} = "";
   }
-  # if ($ext) {
-  #   if ($set) {
-  #     foreach my $e (@$set) {
-  #       confess("set: no subarray allowed if 'ext' is specified")
-  #     }
-  #     if ($elem_ids) {
-  #       foreach my (@$elem_ids) {
-          
-  #       }
-  #     } else {
-        
-  #     }
-  #   } else {
-  #     confess("ext: not allowed without argument 'set'")
-  #   }
-  # }
-  if (ref($set)) {
+  if (defined($elem_ids)) {
+    confess("elem_ids: not allowed without arguments 'set' and 'ext'") if !(defined($ext) &&
+                                                                            defined($set));
+    confess("elem_ids: must be a hash ref") if ref($elem_ids) ne 'HASH';
+  }
+  my $elems;
+  my $tabElems;                # elems to be used in table --> indes in @elems
+  my $eqIds;
+  if ($ext) {
+    if ($set) {
+      foreach my $e (@$set) {
+        confess("set: no subarray allowed if 'ext' is specified") if ref($e);
+      }
+      if ($elem_ids) {
+        confess("elem_ids: wrong number of entries") if keys(%$elem_ids) != @$set;
+        foreach my $e (@$set) {
+          my $e_id = $elem_ids->{$e};
+          confess("elem_ids: '$e': missing value") if !defined($e_id);
+          confess("elem_ids: '$e': entry has wrong value") if ($e_id !~ /^\d$/         ||
+                                                               !defined($set->[$e_id]) ||
+                                                               $set->[$e_id] ne $e);
+        }
+      } else {
+        my $idx = 0;
+        $elem_ids = {map {$_ => $idx++} @$set};
+      }
+      $elems = $set;
+    } else {
+      confess("ext: not allowed without argument 'set'")
+    }
+    %$tabElems = %$elem_ids;
+  } elsif (ref($set)) {
     my @elems;                         # elems
-    my %tabElems;                      # elmes to be used in table --> indes in @elems
-    my %eqIds;                         # idx => array of equivalent idxes
     my %ids;                           # indices in basic elems
     my @eqs_tmp;
 
@@ -98,33 +111,35 @@ sub new {
         $ids{$entry} = $#elems;
       }
     }
-    %tabElems = %ids;
     confess("Internal error") if (defined($eqs) && @eqs_tmp); # Should never happen.
     $eqs = \@eqs_tmp if @eqs_tmp;
-    if (defined($eqs)) {
-      confess("eqs: must be an array ref") if ref($eqs) ne 'ARRAY';
-      my %seen;
-      foreach my $eqArray (@{$eqs}) {
-        confess("eqs: each entry must be an array ref") if ref($eqArray) ne 'ARRAY';
-        next if !@{$eqArray};
-        foreach my $entry (@{$eqArray}) {
-          confess("eqs: subentry contains a non-scalar") if ref($entry);
-          confess("eqs: subentry undefined")             if !defined($entry);
-          confess("eqs: '$entry': unknown element")      if !exists($ids{$entry});  ### !!!
-          confess("eqs: '$entry': duplicate element")    if exists($seen{$entry});  ### !!!
-          $seen{$entry} = undef;
-        }
-        next if @{$eqArray} == 1;
-        my @tmp = @{$eqArray};
-        my @eqArray;
-        $eqIds{$tabElems{shift(@tmp)}} = \@eqArray;
-        foreach my $e (@tmp) {
-          push(@eqArray, delete $tabElems{$e});
-        }
+    ($elems, $elem_ids, $tabElems, $eqIds) = (\@elems, \%ids, {%ids}, {});
+  }
+  if (defined($eqs)) {
+    confess("eqs: must be an array ref") if ref($eqs) ne 'ARRAY';
+    my %eqIds;                         # idx => array of equivalent idxes
+    my %seen;
+    foreach my $eqArray (@{$eqs}) {
+      confess("eqs: each entry must be an array ref") if ref($eqArray) ne 'ARRAY';
+      next if !@{$eqArray};
+      foreach my $entry (@{$eqArray}) {
+        confess("eqs: subentry contains a non-scalar") if ref($entry);
+        confess("eqs: subentry undefined")             if !defined($entry);
+        confess("eqs: '$entry': unknown element")      if !exists($elem_ids->{$entry});
+        confess("eqs: '$entry': duplicate element")    if exists($seen{$entry});
+        $seen{$entry} = undef;
+      }
+      next if @{$eqArray} == 1;
+      my @tmp = @{$eqArray};
+      my @eqArray;
+      $eqIds{$tabElems->{shift(@tmp)}} = \@eqArray;
+      foreach my $e (@tmp) {
+        push(@eqArray, delete $tabElems->{$e});
       }
     }
-    @{$self}{qw(elems elem_ids tab_elems eq_ids)} = (\@elems, \%ids, \%tabElems, \%eqIds);
+    $eqIds = \%eqIds;
   }
+  @{$self}{qw(elems elem_ids tab_elems eq_ids)} = ($elems, $elem_ids, $tabElems, $eqIds);
   return bless($self, $class);
 }
 
@@ -239,7 +254,7 @@ my $_parse_table = sub {
     @{$self}{qw(elems elem_ids tab_elems eq_ids)} = ($h_elems, $h_ids, \%tmp, {});
     $elem_ids = $h_ids;
   }
-  my $eq_ids = $self->{eq_ids}//die;
+  my $eq_ids = $self->{eq_ids};
   my %matrix;
   while (my ($rowElem, $rowContents) = each(%rows)) {
     my %new_row;
@@ -361,7 +376,7 @@ Text::Table::Read::RelationOn::Tiny - Read binary "relation on (over) a set" fro
 
 =head1 VERSION
 
-Version v2.0.1
+Version v2.1.0
 
 
 =head1 SYNOPSIS
@@ -540,6 +555,30 @@ produces the same as this (see description of argument C<set>):
 However, the benefit of C<eqs> is that you can separate the declaration of the
 base set and the equivalent elements, meaning that you can enforce an order of
 the elements independent from what elements are equivalent in your relation.
+
+=item C<ext>
+
+"External data". If this boolean option is true, then the array referenced by
+C<set> is not copied. Instead, the contructor uses directly the reference you
+passed by C<set> and C<elems> will return this reference. This means, that you
+must specify C<set> if you set C<ext> to true.
+
+You can also specify C<elem_ids> along with C<set> and C<ext>. In this case,
+the constructor first checks this hash for consistency and then uses the data
+without copying it. See description of C<set> for more details about the
+C<elem_ids> hash.
+
+Restriction: you can't use array references as entries in the C<set> array if
+you set C<ext> to true. However, you can still use C<eqs> if you want to
+specify equivalent elements.
+
+Default is false.
+
+
+=item C<elem_ids>
+
+This can only be specified in conjunction with C<ext> and C<set>. See
+description of argument C<set>.
 
 =back
 
