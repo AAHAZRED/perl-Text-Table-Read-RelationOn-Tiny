@@ -78,6 +78,9 @@ EOT
     is_deeply($obj->elem_ids,   \%expected_ids, "elem_ids() unchanged");
     is_deeply($obj->tab_elems,  \%expected_ids, "tab_elems()");
     ok($obj->prespec, "prespec() still returns true");
+    isnt($obj->elem_ids, $obj->tab_elems,
+         "elem_ids() and tab_elems() do not reference the same hash");
+
   }
 
   {

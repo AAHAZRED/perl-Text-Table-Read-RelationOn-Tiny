@@ -92,6 +92,42 @@ sub err_like(&$);
 
   err_like {RELATION_ON->new(eqs => [[0], [1, undef, 2]])}
     qr/^eqs: not allowed without argument 'set'/;
+
+  err_like {RELATION_ON->new(elem_ids => {a => 0})}
+    qr/^elem_ids: not allowed without arguments 'set' and 'ext'/;
+
+  err_like {RELATION_ON->new(elem_ids => {a => 0}, set => ['a'])}
+    qr/^elem_ids: not allowed without arguments 'set' and 'ext'/;
+
+  err_like {RELATION_ON->new(elem_ids => {a => 0}, ext => 1)}
+    qr/^elem_ids: not allowed without arguments 'set' and 'ext'/;
+
+  err_like {RELATION_ON->new(elem_ids => [], ext => 1, set => ['a'])}
+    qr/^elem_ids: must be a hash ref/;
+
+  err_like {RELATION_ON->new(ext => 1)}
+    qr/^ext: not allowed without argument 'set'/;
+
+  err_like {RELATION_ON->new(elem_ids => {a => 0}, ext => 1, set => ['a', ['b']])}
+    qr/^set: no subarray allowed if 'ext' is specified/;
+
+  err_like {RELATION_ON->new(elem_ids => {a => 0}, ext => 1, set => [qw(a b)])}
+    qr/^elem_ids: wrong number of entries/;
+
+  err_like {RELATION_ON->new(elem_ids => {a => 0, c => 27}, ext => 1, set => [qw(a b)])}
+    qr/^elem_ids: 'b': missing value/;
+
+  err_like {RELATION_ON->new(elem_ids => {a => 0, b => undef}, ext => 1, set => [qw(a b)])}
+    qr/^elem_ids: 'b': missing value/;
+
+  err_like {RELATION_ON->new(elem_ids => {a => 0, b => 'abc'}, ext => 1, set => [qw(a b)])}
+    qr/^elem_ids: 'b': entry has wrong value/;
+
+  err_like {RELATION_ON->new(elem_ids => {a => 0, b => 0}, ext => 1, set => [qw(a b)])}
+    qr/^elem_ids: 'b': entry has wrong value/;
+
+  err_like {RELATION_ON->new(elem_ids => {a => 0, b => '3'}, ext => 1, set => [qw(a b)])}
+    qr/^elem_ids: 'b': entry has wrong value/;
 }
 
 {
