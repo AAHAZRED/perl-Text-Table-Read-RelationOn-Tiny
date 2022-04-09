@@ -9,7 +9,7 @@ use Carp qw(confess);
 
 # The following must be on the same line to ensure that $VERSION is read
 # correctly by PAUSE and installer tools. See docu of 'version'.
-use version 0.77; our $VERSION = version->declare("v2.2.0");
+use version 0.77; our $VERSION = version->declare("v2.2.1");
 
 
 sub new {
@@ -426,7 +426,7 @@ Text::Table::Read::RelationOn::Tiny - Read binary "relation on (over) a set" fro
 
 =head1 VERSION
 
-Version v2.2.0
+Version v2.2.1
 
 
 =head1 SYNOPSIS
@@ -481,26 +481,26 @@ The hotizontal rules are optional.
 =item *
 
 By default, there is not something like a format check for the horizontal
-rules or alignment. Any line starting with C<|-> is simply ignored, regardless
-of the other subsequent characters, if any. Also, the C<|> need not to be
-aligned, and heading spaces are ignored.
+rules or the alignment. Any line starting with C<|-> is simply ignored,
+regardless of the other subsequent characters, if any. Also, the C<|>
+characters need not to be aligned, and heading spaces are ignored.
 
 However, a format check can be enabled by specifying C<get> argument
 C<pedantic> with a true value.
 
 =item *
 
-Unless you specified a base set in the construcor call, the entries (names) in
-the table's header line are the set's element names. Of course, they must be
-unique. One of these names may be the empty string. Names my contain spaces or
-punctuation chars. The C<|>, of course, cannot be part of a name.
+If you have not specified a base set in the construcor call, the entries
+(names) in the table header are the element names of the set. Of course, they
+must be unique. One of these names may be the empty string. Names my contain
+spaces or punctuation chars. The C<|>, of course, cannot be part of a name.
 
 =item *
 
 The names of the columns (header line) and the rows (first entry of each row)
 must be unique, but they don't have to appear in the same order. By default,
 the set of the header names and the set of the row names must be equal, but
-this can be chaned by argument C<allow_subset> of method C<get>.
+this can be changed by argument C<allow_subset> of method C<get>.
 
 =back
 
@@ -509,7 +509,7 @@ this can be chaned by argument C<allow_subset> of method C<get>.
 
 =head3 new
 
-The constructor take the following optional named scalar arguments:
+The constructor takes the following optional named scalar arguments:
 
 =over
 
@@ -540,21 +540,21 @@ return C<undef> before the first call to C<get>).
 
 Method C<get> will check if the elements in the input table are the same as
 those specified in the array. Furthermore, the indices in C<matrix> will
-always refere to the indices in the C<elems> array constructd from C<set>, and
+always refer to the indices in the C<elems> array constructed from C<set>, and
 C<elems> and C<elem_ids> will always return the same, regardless of the order
 of rows and columns in the input table.
 
 It may happen that there are elements that are identical with respect to the
 relation and you do not want to write duplicate rows and columns in your
-table. To cover such a case, it is allowed that entries of C<set> are array
-references again (another was is using argument C<eqs>).
+table. To cover such a case, it is allowed that entries of C<set> are
+references to array of strings again (another way is using argument C<eqs>).
 
 Example:
 
   [[qw(a a1 a2 a3)], 'b', [qw(c c1)], 'd']
 
 In this case, the elements you write in your table are C<a>, C<b>, C<c>, and
-C<d> (in case of a subarray always the first element is taken). Method C<get>
+C<d> (in case of a subarray the first element is always taken). Method C<get>
 will add corresponding rows and columns for C<a1>, C<a2>, C<a3>, and C<c1> to
 the incidence matrix. Method C<elems> will return this (the nested arrays are
 flattened):
@@ -682,7 +682,7 @@ checks are done:
 
 =item * C<|> characters (and C<+> characters of row seperators) must be aligned.
 
-=item * Row separators are also checked, but are still optional.
+=item * Row separators are also checked, but they are still optional.
 
 =item * Indentation (if any) must be the same for all table rows.
 
@@ -849,7 +849,6 @@ parameter check.
 
 Example:
 
-  $rel_obj->bless_matrix;
   my $matrix = $rel_obj->matrix(bless => 1);
   if ($matrix->related(2, 5)) {
     # ...
@@ -862,12 +861,12 @@ contents!
 =head3 C<matrix_named>
 
 Returns an incidence matrix just as C<matrix> does, but the keys are the
-element names rather than their indices It takes a single optional boolean
+element names rather than their indices. It takes a single optional boolean
 named argument C<bless> doing a job corresponding to the C<bless> argument of
 C<matrix>.
 
 B<Note>: Unlike C<matrix> the matrix returned by C<matrix_named> is not a data
-member and thus it is computed everytime you call thie method.
+member and thus it is computed everytime you call this method.
 
 
 =head1 AUTHOR
