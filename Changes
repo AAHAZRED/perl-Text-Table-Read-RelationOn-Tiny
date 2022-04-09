@@ -1,5 +1,8 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+v2.2.1     2022/04/09
+           Some fixes in POD section.
+
 v2.2.0     2022/04/08
            Add named argument 'pedantic' to get() to enable table format checking.
 
