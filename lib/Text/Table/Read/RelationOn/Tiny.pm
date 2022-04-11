@@ -9,7 +9,7 @@ use Carp qw(confess);
 
 # The following must be on the same line to ensure that $VERSION is read
 # correctly by PAUSE and installer tools. See docu of 'version'.
-use version 0.77; our $VERSION = version->declare("v2.2.2");
+use version 0.77; our $VERSION = version->declare("v2.2.3");
 
 
 sub new {
@@ -430,7 +430,7 @@ Text::Table::Read::RelationOn::Tiny - Read binary "relation on (over) a set" fro
 
 =head1 VERSION
 
-Version v2.2.2
+Version v2.2.3
 
 
 =head1 SYNOPSIS
@@ -476,7 +476,7 @@ string (this is default and can be changed, see description of C<new>).
 =item *
 
 The entry in the table's upper left corner is simply ignored and may be empty,
-but you cannot ommit the upper left C<|> character.
+but you cannot omit the upper left C<|> character.
 
 =item *
 
