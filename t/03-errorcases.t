@@ -182,6 +182,11 @@ sub no_err(&);
                               "|c|-|-|-|",
                               "|b|-|-|-|",
                               "|a|-|-|X|"])}         qr/^'M': row missing for element/;
+
+  err_like {$obj->get(src => ["|.|a|b|c|",
+                              "|c|-|-|-|",
+                              "!b|-|-|-|",
+                              "|a|-|-|X|"])}         qr/Wrong row format: '!b\|-\|-\|-\|'/;
 }
 
 {
@@ -253,7 +258,7 @@ sub no_err(&);
 }
 
 {
-  note("Pedantic: row 2");
+  note("Pedantic: row 2 (indentation)");
   my @src = ("  |.|a|b|c|",
              "|c| | | |",
              "  |b| | | |",
@@ -261,12 +266,12 @@ sub no_err(&);
   my $obj = RELATION_ON->new(set => [qw(a b c)]);
   no_err {$obj->get(  src      => \@src)};
   err_like {$obj->get(src      => \@src,
-                      pedantic => 1)}   qr/Wrong row format at line 2\b/;
+                      pedantic => 1)}   qr/Wrong indentation at line 2\b/;
 }
 
 
 {
-  note("Pedantic: row 3");
+  note("Pedantic: row 3 (missing '|' at end of line)");
   my @src = ("|.|a|b|c|",
              "|c| | |  ",
              "|b| | | |",
@@ -278,33 +283,54 @@ sub no_err(&);
 }
 
 
-
 {
-  note("Pedantic: row sep 1");
-  my @src = ("|.|a|b|c|",
-             "|-----",
-             "|c| | | | ",
-             "|b| | | |",
-             "|a| | |X|");
+  note("Pedantic");
   my $obj = RELATION_ON->new(set => [qw(a b c)]);
-  no_err {$obj->get(  src      => \@src)};
-  err_like {$obj->get(src      => \@src,
-                      pedantic => 1)}   qr/Invalid row separator at line 2\b/;
+  {
+    note("Pedantic: row sep 1");
+    my @src = ("|.|a|b|c|",
+               "|-+-+-|-|",
+               "|c| | | | ",
+               "|b| | | |",
+               "|a| | |X|");
+    no_err   {$obj->get(src      => \@src)};
+    err_like {$obj->get(src      => \@src,
+                        pedantic => 1)}   qr/Invalid row separator at line 2\b/;
+  }
+
+  {
+    note("Pedantic: row sep (indentation)");
+    my @src = ("|.|a|b|c|",
+               " |-+-+-+-|",
+               "|c| | | | ",
+               "|b| | | |",
+               "|a| | |X|");
+    no_err   {$obj->get(src      => \@src)};
+    err_like {$obj->get(src      => \@src,
+                        pedantic => 1)}   qr/Wrong indentation at line 2\b/;
 }
 
-{
-  note("Pedantic: row sep 2");
-  my @src = ("|.|a|b|c|",
-             " |-+-+-+-|",
-             "|c| | | | ",
-             "|b| | | |",
-             "|a| | |X|");
-  my $obj = RELATION_ON->new(set => [qw(a b c)]);
-  no_err {$obj->get(  src      => \@src)};
-  err_like {$obj->get(src      => \@src,
-                      pedantic => 1)}   qr/Invalid row separator at line 2\b/;
-}
+  {
+    note("Pedantic: with and without (same typo, different messages depending on pedantic)");
+    err_like {$obj->get(src => ["|.|a|b|c|",
+                                "|c| | | |",
+                                "|b| ! | |",
+                                "|a| | |X|"])}         qr/'!': unexpected entry\b/;
 
+    err_like {$obj->get(pedantic => 0,
+                        src      => ["|.|a|b|c|",
+                                     "|c| | | |",
+                                     "|b| ! | |",
+                                     "|a| | |X|"])}         qr/'!': unexpected entry\b/;
+
+    err_like {$obj->get(pedantic => 1,
+                        src      => ["|.|a|b|c|",
+                                     "|c| | | |",
+                                     "|b| ! | |",
+                                     "|a| | |X|"])}         qr/\bWrong row format at line 3\b/;
+
+  }
+}
 
 #--------------------------------------------------------------------------------------------------
 
