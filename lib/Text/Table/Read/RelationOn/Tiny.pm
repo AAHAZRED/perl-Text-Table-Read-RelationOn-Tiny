@@ -798,8 +798,8 @@ line), or C<undef> if you did neither call C<get> for the current object nor
 specified option C<set> when calling the constructor. See description of
 C<get> and C<new>.
 
-B<Note>: This returns a reference to an internal member, so do not change the
-contents!
+B<Note>: This returns a reference to an internal member, so don't change the
+content!
 
 
 =head3 C<elem_ids>
@@ -808,8 +808,8 @@ Returns a reference to a hash mapping elements to ids (indices in array
 returned by C<elems>), or C<undef> if you did neither call C<get> for the
 current object nor specified argument C<set> when calling the constructor.
 
-B<Note>: This returns a reference to an internal member, so do not change the
-contents!
+B<Note>: This returns a reference to an internal member, so don't change the
+content!
 
 
 =head3 C<tab_elems>
@@ -833,8 +833,8 @@ If you did not specify equivalent elements, the this method return C<undef>
 after the constructor call, but the first call to C<get> sets it to an empty
 hash.
 
-B<Note>: This returns a reference to an internal member, so do not change the
-contents!
+B<Note>: This returns a reference to an internal member, so don't change the
+content!
 
 
 =head3 C<matrix>
@@ -848,7 +848,7 @@ matrix is blessed with
 C<Text::Table::Read::RelationOn::Tiny::_Relation_Matrix> Then you can use the
 matrix as an object having exactly one method named C<related>. This method
 again takes two arguments (integers) and check if these are related with
-respect to the incidence C<matrix>. Note that c<related> does not do any
+respect to the incidence C<matrix>. Note that C<related> does not do any
 parameter check.
 
 Example:
@@ -858,8 +858,8 @@ Example:
     # ...
   }
 
-B<Note>: This returns a reference to an internal member, so do not change the
-contents!
+B<Note>: This returns a reference to an internal member, so don't change the
+content!
 
 
 =head3 C<matrix_named>
@@ -870,7 +870,9 @@ named argument C<bless> doing a job corresponding to the C<bless> argument of
 C<matrix>.
 
 B<Note>: Unlike C<matrix> the matrix returned by C<matrix_named> is not a data
-member and thus it is computed everytime you call this method.
+member and thus it is computed everytime you call this method. This also means
+that you can change the content of the returned matrix without damaging
+anything.
 
 
 =head2 PITFALLS
