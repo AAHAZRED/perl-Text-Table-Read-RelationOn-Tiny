@@ -873,6 +873,57 @@ B<Note>: Unlike C<matrix> the matrix returned by C<matrix_named> is not a data
 member and thus it is computed everytime you call this method.
 
 
+=head2 PITFALLS
+
+Basically, you do not need spaces around the C<|> separators. This table, for
+example, is perfectly fine:
+
+     |.|a|b|c|
+     |-+-+-+-|
+     |c| |X| |
+     |-+-+-+-|
+     |b| | | |
+     |-+-+-+-|
+     |a| | |X|
+
+However, if you have element names with a dash at the beginning, then you need
+a space at least after the first C<|> character. Example:
+
+=over
+
+=item B<WRONG>
+
+
+    | x\y   | this | that |-blah   |-    |
+    |-------+------+------+--------+-----|
+    | this  | X    |      | X      |  X  |
+    |-------+------+------+--------+-----|
+    | that  |      |      | X      |     |
+    |-------+------+------+--------+-----|
+    |-blah  |      | X    |        |     |
+    |-------+------+------+--------+-----|
+    |-      |      |      |        |     |
+    |-------+------+------+--------+-----|
+
+
+=item B<RIGHT>
+
+
+    | x\y   | this | that |-blah   |-    |
+    |-------+------+------+--------+-----|
+    | this  | X    |      | X      |  X  |
+    |-------+------+------+--------+-----|
+    | that  |      |      | X      |     |
+    |-------+------+------+--------+-----|
+    | -blah |      | X    |        |     |
+    |-------+------+------+--------+-----|
+    | -     |      |      |        |     |
+    |-------+------+------+--------+-----|
+
+=back
+
+
+
 =head1 AUTHOR
 
 Abdul al Hazred, C<< <451 at gmx.eu> >>
