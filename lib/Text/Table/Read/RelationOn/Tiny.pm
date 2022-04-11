@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use autodie;
 
-use Carp qw(confess);
+use Carp;
 
 # The following must be on the same line to ensure that $VERSION is read
 # correctly by PAUSE and installer tools. See docu of 'version'.
@@ -15,7 +15,7 @@ use version 0.77; our $VERSION = version->declare("v2.2.3");
 sub new {
   my $class = shift;
   $class = ref($class) if ref($class);
-  confess("Odd number of arguments") if @_ % 2;
+  croak("Odd number of arguments") if @_ % 2;
   my %args = @_;
   my $inc      = delete $args{inc}   // "X";
   my $noinc    = delete $args{noinc} // "";
@@ -23,47 +23,47 @@ sub new {
   my $eqs      = delete $args{eqs};
   my $ext      = delete $args{ext};
   my $elem_ids = delete $args{elem_ids};
-  confess(join(", ", sort(keys(%args))) . ": unexpected argument") if %args;
-  confess("inc: must be a scalar")               if ref($inc);
-  confess("noinc: must be a scalar")             if ref($noinc);
+  croak(join(", ", sort(keys(%args))) . ": unexpected argument") if %args;
+  croak("inc: must be a scalar")               if ref($inc);
+  croak("noinc: must be a scalar")             if ref($noinc);
   s/^\s+// for ($inc, $noinc);
   s/\s+$// for ($inc, $noinc);
-  confess("inc and noinc must be different")     if $inc eq $noinc;
-  confess("'|' is not allowed for inc or noinc") if $inc eq '|' || $noinc eq '|';
+  croak("inc and noinc must be different")     if $inc eq $noinc;
+  croak("'|' is not allowed for inc or noinc") if $inc eq '|' || $noinc eq '|';
   my $self = {inc    => $inc,
               noinc  => $noinc,
              };
   if (defined($set)) {
     my %seen;
-    confess("set: must be an array reference") if ref($set) ne 'ARRAY';
+    croak("set: must be an array reference") if ref($set) ne 'ARRAY';
     my $cnt = 1;
     foreach my $e (@$set) {
       if (ref($e)) {
-        confess("set: entry $cnt: invalid") if ref($e) ne 'ARRAY';
-        confess("set: entry $cnt: array not allowed if eqs is specified") if $eqs;
-        confess("set: entry $cnt: array entry must not be empty") if !@{$e};
+        croak("set: entry $cnt: invalid") if ref($e) ne 'ARRAY';
+        croak("set: entry $cnt: array not allowed if eqs is specified") if $eqs;
+        croak("set: entry $cnt: array entry must not be empty") if !@{$e};
         foreach my $sub_e (@$e) {
-          confess("set: entry $cnt: subarray contains invalid entry")
+          croak("set: entry $cnt: subarray contains invalid entry")
             if ref($sub_e) || !defined($sub_e);
-          confess("set: '$sub_e': duplicate element") if exists($seen{$sub_e});
+          croak("set: '$sub_e': duplicate element") if exists($seen{$sub_e});
           $seen{$sub_e} = undef;
         }
       } else {
-        confess("set: entry $cnt: invalid") if !defined($e);
-        confess("set: '$e': duplicate element") if exists($seen{$e});
+        croak("set: entry $cnt: invalid") if !defined($e);
+        croak("set: '$e': duplicate element") if exists($seen{$e});
         $seen{$e} = undef;
       }
       ++$cnt;
     }
     $self->{prespec} = 1;
   } else {
-    confess("eqs: not allowed without argument 'set'") if defined($eqs);
+    croak("eqs: not allowed without argument 'set'") if defined($eqs);
     $self->{prespec} = "";
   }
   if (defined($elem_ids)) {
-    confess("elem_ids: not allowed without arguments 'set' and 'ext'") if !(defined($ext) &&
+    croak("elem_ids: not allowed without arguments 'set' and 'ext'") if !(defined($ext) &&
                                                                             defined($set));
-    confess("elem_ids: must be a hash ref") if ref($elem_ids) ne 'HASH';
+    croak("elem_ids: must be a hash ref") if ref($elem_ids) ne 'HASH';
   }
   my $elems;
   my $tabElems;                # elems to be used in table --> indes in @elems
@@ -71,14 +71,14 @@ sub new {
   if ($ext) {
     if ($set) {
       foreach my $e (@$set) {
-        confess("set: no subarray allowed if 'ext' is specified") if ref($e);
+        croak("set: no subarray allowed if 'ext' is specified") if ref($e);
       }
       if ($elem_ids) {
-        confess("elem_ids: wrong number of entries") if keys(%$elem_ids) != @$set;
+        croak("elem_ids: wrong number of entries") if keys(%$elem_ids) != @$set;
         foreach my $e (@$set) {
           my $e_id = $elem_ids->{$e};
-          confess("elem_ids: '$e': missing value") if !defined($e_id);
-          confess("elem_ids: '$e': entry has wrong value") if ($e_id !~ /^\d$/         ||
+          croak("elem_ids: '$e': missing value") if !defined($e_id);
+          croak("elem_ids: '$e': entry has wrong value") if ($e_id !~ /^\d$/         ||
                                                                !defined($set->[$e_id]) ||
                                                                $set->[$e_id] ne $e);
         }
@@ -88,7 +88,7 @@ sub new {
       }
       $elems = $set;
     } else {
-      confess("ext: not allowed without argument 'set'")
+      croak("ext: not allowed without argument 'set'")
     }
     %$tabElems = %$elem_ids;
   } elsif (ref($set)) {
@@ -111,22 +111,22 @@ sub new {
         $ids{$entry} = $#elems;
       }
     }
-    confess("Internal error") if (defined($eqs) && @eqs_tmp); # Should never happen.
+    croak("Internal error") if (defined($eqs) && @eqs_tmp); # Should never happen.
     $eqs = \@eqs_tmp if @eqs_tmp;
     ($elems, $elem_ids, $tabElems, $eqIds) = (\@elems, \%ids, {%ids}, {});
   }
   if (defined($eqs)) {
-    confess("eqs: must be an array ref") if ref($eqs) ne 'ARRAY';
+    croak("eqs: must be an array ref") if ref($eqs) ne 'ARRAY';
     my %eqIds;                         # idx => array of equivalent idxes
     my %seen;
     foreach my $eqArray (@{$eqs}) {
-      confess("eqs: each entry must be an array ref") if ref($eqArray) ne 'ARRAY';
+      croak("eqs: each entry must be an array ref") if ref($eqArray) ne 'ARRAY';
       next if !@{$eqArray};
       foreach my $entry (@{$eqArray}) {
-        confess("eqs: subentry contains a non-scalar") if ref($entry);
-        confess("eqs: subentry undefined")             if !defined($entry);
-        confess("eqs: '$entry': unknown element")      if !exists($elem_ids->{$entry});
-        confess("eqs: '$entry': duplicate element")    if exists($seen{$entry});
+        croak("eqs: subentry contains a non-scalar") if ref($entry);
+        croak("eqs: subentry undefined")             if !defined($entry);
+        croak("eqs: '$entry': unknown element")      if !exists($elem_ids->{$entry});
+        croak("eqs: '$entry': duplicate element")    if exists($seen{$entry});
         $seen{$entry} = undef;
       }
       next if @{$eqArray} == 1;
@@ -183,15 +183,15 @@ sub _parse_header_f {
   $header =~ s/\s+$//;
   my @rule_pos;
   if ($pedantic) {
-    substr($header, -1, 1) eq '|' or die("'$header': Wrong header format");
+    substr($header, -1, 1) eq '|' or croak("'$header': Wrong header format");
   }
-  $header =~ s/^\s*\|.*?\|\s*// or die("'$header': Wrong header format");
+  $header =~ s/^\s*\|.*?\|\s*// or croak("'$header': Wrong header format");
   my @elem_array = $header eq "|" ? ('') : split(/\s*\|\s*/, $header);
   return ([], {}) if $header eq "";
   my $index = 0;
   my %elem_ids;
   foreach my $name (@elem_array) {
-    die("'$name': duplicate name in header") if exists($elem_ids{$name});
+    croak("'$name': duplicate name in header") if exists($elem_ids{$name});
     $elem_ids{$name} = $index++;
   }
   return (\@elem_array, \%elem_ids);
@@ -202,7 +202,7 @@ my $_parse_row = sub {
   my $self = shift;
   my $row = shift;
   my ($inc, $noinc) = @{$self}{qw(inc noinc)};
-  $row =~ s/^\|\s*([^|]*?)\s*\|\s*// or die("Wrong row format: '$row'");
+  $row =~ s/^\|\s*([^|]*?)\s*\|\s*// or croak("Wrong row format: '$row'");
   my $rowElem = $1;
   my @rowContents;
   if ($row ne "") {
@@ -214,7 +214,7 @@ my $_parse_row = sub {
       } elsif ($entry eq $noinc) {
         push(@rowContents, "");
       } else {
-        die("'$entry': unexpected entry");
+        croak("'$entry': unexpected entry");
       }
     }
   }
@@ -255,21 +255,21 @@ my $_parse_table = sub {
     last if $line eq q{};
     if ($pedantic) {
       $line =~ /\S/;
-      $-[0] == $rule_pos->[0] or die("Wrong indentation at line " . ($index + 1));
+      $-[0] == $rule_pos->[0] or croak("Wrong indentation at line " . ($index + 1));
     }
     if ($line =~ /^\s*\|-/) {
       if ($pedantic) {
-        $line eq $sep_line or die("Invalid row separator at line " . ($index + 1));
+        $line eq $sep_line or croak("Invalid row separator at line " . ($index + 1));
       }
       next;
     }
     if ($pedantic) {
       _int_array_cmp(_rule_pos_array_f($line), $rule_pos) or
-        die("Wrong row format at line " . ($index + 1));
+        croak("Wrong row format at line " . ($index + 1));
     }
     $line =~ s/^\s*//;
     my ($rowElem, $rowContent) = $self->$_parse_row($line);
-    die("'$rowElem': duplicate element in first column") if exists($rows{$rowElem});
+    croak("'$rowElem': duplicate element in first column") if exists($rows{$rowElem});
     $rows{$rowElem} = $rowContent;
     push(@rowElems, $rowElem);
   }
@@ -277,15 +277,15 @@ my $_parse_table = sub {
     my $tab_elems = $self->{tab_elems};
     $elem_ids     = $self->{elem_ids};
     foreach my $elem (keys(%{$h_ids})) {
-      die("'$elem': unknown element in table") if !exists($tab_elems->{$elem});
+      croak("'$elem': unknown element in table") if !exists($tab_elems->{$elem});
     }
     foreach my $elem (keys(%rows)) {
-      die("'$elem': unknown element in table") if !exists($tab_elems->{$elem});
+      croak("'$elem': unknown element in table") if !exists($tab_elems->{$elem});
     }
     if (!$allow_subset) {
       foreach my $elem (keys(%{$tab_elems})) {
-        die("'$elem': column missing for element") if !exists($h_ids->{$elem});
-        die("'$elem': row missing for element"   ) if !exists($rows{$elem});
+        croak("'$elem': column missing for element") if !exists($h_ids->{$elem});
+        croak("'$elem': row missing for element"   ) if !exists($rows{$elem});
       }
     }
   } else {
@@ -297,10 +297,10 @@ my $_parse_table = sub {
         }
       }
     } else {
-      die("Number of elements in header does not match number of elemens in row")
+      croak("Number of elements in header does not match number of elemens in row")
         if keys(%{$h_ids}) != keys(%rows);
       foreach my $elem (keys(%{$h_ids})) {
-        die("'$elem': row missing for element") if !exists($rows{$elem});
+        croak("'$elem': row missing for element") if !exists($rows{$elem});
       }
     }
     my %tmp = %{$h_ids};
@@ -338,18 +338,18 @@ my $_parse_table = sub {
 
 sub get {
   my $self = shift;
-  confess("Odd number of arguments") if @_ % 2;
+  croak("Odd number of arguments") if @_ % 2;
   my %args = @_;
   my $allow_subset = delete $args{allow_subset};
   my $pedantic     = delete $args{pedantic};
-  confess("Missing argument 'src'") if !@_;
-  my $src          = delete $args{src}          // confess("Invalid value argument for 'src'");
-  confess(join(", ", sort(keys(%args))) . ": unexpected argument") if %args;
+  croak("Missing argument 'src'") if !@_;
+  my $src          = delete $args{src}          // croak("Invalid value argument for 'src'");
+  croak(join(", ", sort(keys(%args))) . ": unexpected argument") if %args;
   my $inputArray;
   if (ref($src)) {
-    confess("Invalid value argument for 'src'") if ref($src) ne 'ARRAY';
+    croak("Invalid value argument for 'src'") if ref($src) ne 'ARRAY';
     foreach my $e (@{$src}) {
-      confess("src: each entry must be a defined scalar") if (ref($e) || !defined($e));
+      croak("src: each entry must be a defined scalar") if (ref($e) || !defined($e));
     }
     $inputArray = $src;
   } elsif ($src !~ /\n/) {
@@ -365,21 +365,21 @@ sub get {
 }
 
 
-sub inc         {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{inc};}
-sub noinc       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
-sub prespec     {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
-sub elems       {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
-sub elem_ids    {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
-sub tab_elems   {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{tab_elems};}
-sub eq_ids      {confess("Unexpected argument(s)") if @_ > 1; $_[0]->{eq_ids};}
+sub inc         {croak("Unexpected argument(s)") if @_ > 1; $_[0]->{inc};}
+sub noinc       {croak("Unexpected argument(s)") if @_ > 1; $_[0]->{noinc};}
+sub prespec     {croak("Unexpected argument(s)") if @_ > 1; $_[0]->{prespec};}
+sub elems       {croak("Unexpected argument(s)") if @_ > 1; $_[0]->{elems};}
+sub elem_ids    {croak("Unexpected argument(s)") if @_ > 1; $_[0]->{elem_ids};}
+sub tab_elems   {croak("Unexpected argument(s)") if @_ > 1; $_[0]->{tab_elems};}
+sub eq_ids      {croak("Unexpected argument(s)") if @_ > 1; $_[0]->{eq_ids};}
 
 
 sub matrix {
   my $self = shift;
-  confess("Odd number of arguments") if @_ % 2;
+  croak("Odd number of arguments") if @_ % 2;
   my %args = @_;
   my $bless = delete $args{bless};
-  confess("Unexpected argument(s)") if %args;
+  croak("Unexpected argument(s)") if %args;
   return if !$self->{matrix};
   bless($self->{matrix}, "Text::Table::Read::RelationOn::Tiny::_Relation_Matrix") if $bless;
   return $self->{matrix};
@@ -388,10 +388,10 @@ sub matrix {
 
 sub matrix_named {
   my $self = shift;
-  confess("Odd number of arguments") if @_ % 2;
+  croak("Odd number of arguments") if @_ % 2;
   my %args = @_;
   my $bless = delete $args{bless};
-  confess("Unexpected argument(s)") if %args;
+  croak("Unexpected argument(s)") if %args;
 
   my ($matrix, $elems) = @{$self}{qw(matrix elems)};
   return if !$matrix;
