@@ -1,5 +1,9 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+v2.2.2     2022/04/11
+           If pedantic is true, then first cheack indetation of a row
+           Added tests
+
 v2.2.1     2022/04/09
            Some fixes in POD section.
 

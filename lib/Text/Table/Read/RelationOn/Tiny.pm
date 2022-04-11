@@ -253,6 +253,10 @@ my $_parse_table = sub {
   for (++$index; $index < @$lines; ++$index) {
     (my $line = $lines->[$index]) =~ s/\s+$//;
     last if $line eq q{};
+    if ($pedantic) {
+      $line =~ /\S/;
+      $-[0] == $rule_pos->[0] or die("Wrong indentation at line " . ($index + 1));
+    }
     if ($line =~ /^\s*\|-/) {
       if ($pedantic) {
         $line eq $sep_line or die("Invalid row separator at line " . ($index + 1));
