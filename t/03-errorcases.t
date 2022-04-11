@@ -189,6 +189,30 @@ sub no_err(&);
                               "|a|-|-|X|"])}         qr/Wrong row format: '!b\|-\|-\|-\|'/;
 }
 
+
+{
+  note("Element names with heading dash");
+  my $obj = Text::Table::Read::RelationOn::Tiny->new();
+      my $input = <<'EOT';
+
+| x\y   | this | that |-blah   |-    |
+|-------+------+------+--------+-----|
+| this  | X    |      | X      |  X  |
+|-------+------+------+--------+-----|
+| that  |      |      | X      |     |
+|-------+------+------+--------+-----|
+| -blah |      | X    |        |     |
+|-------+------+------+--------+-----|
+|-      |      |      |        |     |
+|-------+------+------+--------+-----|
+
+EOT
+#Don't append a semicolon to the line above!
+  err_like {$obj->get(src =>$input)}  qr/\bNumber\ of\ elements\ in\ header\ does\ not\ match
+                                         \ number\ of\ elemens\ in\ row\b/x;
+
+}
+
 {
   note("Data error: other, with predefined set");
   my $obj = RELATION_ON->new(set => [qw(a b c)]);
