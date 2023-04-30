@@ -1,0 +1,18 @@
+# ignore editor droppings
+*.swp
+*~
+.#*
+
+
+# Taken from https://github.com/manakai/perl-charclass/blob/master/.gitignore
+/local/
+/perl
+/prove
+/plackup
+/Makefile.setupenv
+/cin
+/config/perl/libs.txt
+/deps/
+lib/Char/Class/mozilla-pref.js
+pod2htmd.tmp
+pod2htmi.tmp
