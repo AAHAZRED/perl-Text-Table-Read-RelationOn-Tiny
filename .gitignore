@@ -10,6 +10,7 @@
 /prove
 /plackup
 /Makefile.setupenv
+/Makefile.old
 /cin
 /config/perl/libs.txt
 /deps/
