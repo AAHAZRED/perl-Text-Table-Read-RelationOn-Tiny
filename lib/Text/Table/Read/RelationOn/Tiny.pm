@@ -648,7 +648,7 @@ The method reads and parses a table. It takes the following named arguments:
 =item C<src>
 
 Mandatory. The source from which the table is to be read. May be either a file
-name, an array reference or a string containing newline characters. 
+name, an array reference or a string containing newline characters.
 
 =over
 
