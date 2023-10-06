@@ -674,6 +674,9 @@ Optional. Takes a boolean value. If I<true>, then rows and columns need not to
 be equal and may contain a subset of the relation's base set only. This way
 you can omit rows and columns not containing any incidences.
 
+Default is I<false>.
+
+
 =item C<pedantic>
 
 Optional. Takes a boolean value. If I<true>, then some additional table format
