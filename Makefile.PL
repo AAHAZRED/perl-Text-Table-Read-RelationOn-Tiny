@@ -19,7 +19,7 @@ my %WriteMakefileArgs = (
         'warnings' => '0',
     },
     PREREQ_PM => {
-        'version' = > '0.77',
+        'version'  => '0.77',
         'autodie'  => '0',
         'Carp'     => '0',
         'strict'   => '0',
