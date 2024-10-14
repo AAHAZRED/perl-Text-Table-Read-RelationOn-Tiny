@@ -858,7 +858,24 @@ A more complex example:
    [C]
    c var = A
 
-Variable C<nested> in section C<B> has the value C<1234567>.
+Variable C<nested> in section C<B> has the value C<1234567>:
+
+=over
+
+=item
+
+C<$([C]c var)> expands to C<A>,
+
+=item
+
+C<$(b var)> expands to C<a var>,
+
+=item
+
+We therefore have C<$([A]a var)> which leads to C<1234567>.
+
+=back
+
 
 
 =head2 PREDEFINED VARIABLES
