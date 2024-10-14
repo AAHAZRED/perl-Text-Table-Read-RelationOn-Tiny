@@ -877,7 +877,6 @@ We therefore have C<$([A]a var)> which leads to C<1234567>.
 =back
 
 
-
 =head2 PREDEFINED VARIABLES
 
 =head3 Variables related to Section and Variable Names
