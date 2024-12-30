@@ -739,7 +739,7 @@ checks are done:
 
 =over
 
-=item * Each row (incl. the header) must have a trailing C<|> character
+=item * Each row (including the header) must have a trailing C<|> character
 
 =item * C<|> characters (and C<+> characters of row separators) must be aligned.
 
@@ -848,47 +848,47 @@ Returns 1 (true) if you specified constructor argument C<set> when calling the
 constructor, otherwise it returns an empty string (false).
 
 
-=head3 C<elems [I<DUP>]>
+=head3 C<elems [I<C<DUP>>]>
 
 Returns a reference to the array of elements (names from the table's header
 line), or C<undef> if you did neither call C<get> for the current object nor
 specified option C<set> when calling the constructor. See description of
 C<get> and C<new>.
 
-If optional scalar argument I<DUP> has a true value, then a reference to a
+If optional scalar argument I<C<DUP>> has a true value, then a reference to a
 clone of this array is returned. Default is false.
 
-B<Note>: Without passing a true value via I<DUP> this returns a reference to
+B<Note>: Without passing a true value via I<C<DUP>> this returns a reference to
 an internal member, so don't change the content in this case!
 
 
-=head3 C<elem_ids [I<DUP>]>
+=head3 C<elem_ids [I<C<DUP>>]>
 
 Returns a reference to a hash mapping elements to ids (indices in array
 returned by C<elems>), or C<undef> if you did neither call C<get> for the
 current object nor specified argument C<set> when calling the constructor.
 
-If optional scalar argument I<DUP> has a true value, then a reference to a
+If optional scalar argument I<C<DUP>> has a true value, then a reference to a
 clone of this hash is returned. Default is false.
 
-B<Note>: Without passing a true value via I<DUP> this returns a reference to
+B<Note>: Without passing a true value via I<C<DUP>> this returns a reference to
 an internal member, so don't change the content in this case!
 
 
-=head3 C<tab_elems [I<DUP>]>
+=head3 C<tab_elems [I<C<DUP>>]>
 
 Returns a reference to a hash whose keys are the elements that may appear in
 the table. If you did not specify equivalent elements (see description of
 C<new>), then the contents of this hash is identical with C<elem_ids>.
 
-If optional scalar argument I<DUP> has a true value, then a reference to a
+If optional scalar argument I<C<DUP>> has a true value, then a reference to a
 clone of this hash is returned. Default is false.
 
-B<Note>: Without passing a true value via I<DUP> this returns a reference to
+B<Note>: Without passing a true value via I<C<DUP>> this returns a reference to
 an internal member, so don't change the content in this case!
 
 
-=head3 C<eq_ids [I<DUP>]>
+=head3 C<eq_ids [I<C<DUP>>]>
 
 Returns a reference to a hash. If you specified equivalent elements (see
 description of C<new>), then the keys are the indices (see C<elem_ids> and
@@ -899,10 +899,10 @@ If you did not specify equivalent elements, the this method return C<undef>
 after the constructor call, but the first call to C<get> sets it to an empty
 hash.
 
-If optional scalar argument I<DUP> has a true value, then a reference to a
+If optional scalar argument I<C<DUP>> has a true value, then a reference to a
 clone of this hash is returned. Default is false.
 
-B<Note>: Without passing a true value via I<DUP> this returns a reference to
+B<Note>: Without passing a true value via I<C<DUP>> this returns a reference to
 an internal member, so don't change the content in this case!
 
 
@@ -941,7 +941,7 @@ is returned. Default is false.
 
 =back
 
-B<Note>: Without setting I<dup> to true this returns a reference to an
+B<Note>: Without setting I<C<dup>> to true this returns a reference to an
 internal member, so don't change the content!
 
 
