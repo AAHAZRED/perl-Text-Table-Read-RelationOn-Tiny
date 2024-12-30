@@ -484,7 +484,7 @@ Text::Table::Read::RelationOn::Tiny - Read binary "relation on (over) a set" fro
 
 =head1 VERSION
 
-Version v2.3.1
+Version #VERSION#
 
 
 =head1 SYNOPSIS
@@ -1011,7 +1011,7 @@ a space at least after the first C<|> character. Example:
 
 =head1 AUTHOR
 
-Abdul al Hazred, C<< <451 at gmx.eu> >>
+#AUTHOR#, C<< <451 at gmx.eu> >>
 
 =head1 BUGS
 
@@ -1054,7 +1054,7 @@ L<https://github.com/AAHAZRED/perl-Text-Table-Read-RelationOn-Tiny>
 
 =head1 LICENSE AND COPYRIGHT
 
-This software is Copyright (c) 2021 by Abdul al Hazred.
+This software is Copyright (c) 2021 by #AUTHOR#.
 
 This is free software, licensed under:
 
