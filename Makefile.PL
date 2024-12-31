@@ -25,6 +25,7 @@ my %WriteMakefileArgs = (
         'strict'   => '0',
         'warnings' => '0',
     },
+    PM_FILTER => 'perl tools/pm_filter_simple.pl',
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Text-Table-Read-RelationOn-Tiny-*' },
 );
