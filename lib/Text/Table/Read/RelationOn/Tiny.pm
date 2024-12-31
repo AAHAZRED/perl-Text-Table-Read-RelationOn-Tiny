@@ -1035,7 +1035,7 @@ You can also look for information at:
 
 =over 4
 
-=item * CPAN's request tracker (report bugs here)
+=item * RT: CPAN's request tracker (report bugs here)
 
 L<https://rt.cpan.org/NoAuth/Bugs.html?Dist=Text-Table-Read-RelationOn-Tiny>
 
