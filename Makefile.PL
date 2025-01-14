@@ -26,9 +26,14 @@ my %WriteMakefileArgs = (
         'warnings' => '0',
     },
     PM_FILTER => 'perl tools/pm_filter_simple.pl',
-    dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
+    dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', DIST_CP => 'cp',
+               PREOP => 'perl tools/pm_filter_simple.pl $(DISTVNAME)'},
     clean => { FILES => 'Text-Table-Read-RelationOn-Tiny-*' },
 );
+
+if ($ENV{AAHAZRED_PERL_DEVEL}) {
+  $WriteMakefileArgs{PM_FILTER} = 'perl tools/pm_filter_simple.pl';
+}
 
 # Compatibility with old versions of ExtUtils::MakeMaker
 unless (eval { ExtUtils::MakeMaker->VERSION('6.64'); 1 }) {
