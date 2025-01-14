@@ -1,0 +1,42 @@
+name: Run Author Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# https://github.com/shogo82148/actions-setup-perl
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Author tests
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: "5.40"
+      - name: Show Perl version
+        run: perl -V
+      - name: Install hunspell
+        run: sudo apt-get install hunspell hunspell-tools
+      - name: Install current cpanm
+        run: cpanm App::cpanminus
+      - name: Install dependencies
+        run: cpanm --installdeps .
+      - name: Install modules for author tests
+        run: cpanm Test::Pod Test::Spelling
+      - name: Show content of log files on Linux
+        if: failure()
+        run: cat /home/runner/.cpanm/work/*/build.log
+
+      - name: Run author tests
+        run: prove -bv xt

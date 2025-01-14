@@ -1,0 +1,67 @@
+name: Run Module Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# https://github.com/shogo82148/actions-setup-perl
+
+jobs:
+  build:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        perl: ["5.10", "5.14", "5.16", "5.36", "5.40"]
+        exclude:
+          # This combination causes problems
+          - runner: windows-latest
+            perl: 5.10
+    name: Perl ${{ matrix.perl }} on ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+      - name: Show Perl version
+        run: perl -V
+      - name: Install current cpanm
+        run: cpanm App::cpanminus
+      - name: Install dependencies
+        run: cpanm --installdeps .
+
+      - name: Show content of log files on Linux
+        if: ${{ failure() && startsWith( matrix.runner, 'ubuntu-' )  }}
+        run: cat /home/runner/.cpanm/work/*/build.log
+ 
+      - name: Show content of log files on Mac
+        if: ${{ failure() && startsWith( matrix.runner, 'macos-' )  }}
+        run: cat /Users/runner/.cpanm/work/*/build.log
+ 
+      - name: Show content of log files on Windows
+        if: ${{ failure() && startsWith( matrix.runner, 'windows-' )  }}
+        run: cat C:/Users/RUNNER~1/.cpanm/work/*/build.log
+
+      - name: Process Makefile.PL
+        run: |
+          perl Makefile.PL
+          make
+      - name: Run Regular Tests 
+        run: prove -bv t
+
+      - name: Run author tests
+        if: startsWith( matrix.runner, 'ubuntu-' ) && matrix.perl == '5.40'
+        run: |
+          sudo apt-get install hunspell hunspell-tools
+          cpanm Test::Pod Test::Spelling
+          prove -bv xt
+
