@@ -502,12 +502,10 @@ Version #VERSION#
 
 =head1 DESCRIPTION
 
-Minimum version of perl required to use this module: C<v5.10.1>.
-
 This module implements a class that reads a binary I<relation on a set>
 (I<homogeneous relation>, see
 L<https://en.wikipedia.org/wiki/Binary_relation#Homogeneous_relation>) from a
-text table.
+text table, which could be described as a "two-valued cross table".
 
 The table format must look like this:
 
@@ -566,6 +564,8 @@ the set of the header names and the set of the row names must be equal, but
 this can be changed by argument C<allow_subset> of method C<get>.
 
 =back
+
+Minimum version of perl required to use this module: C<v5.10.1>.
 
 
 =head2 METHODS
@@ -708,7 +708,7 @@ The method reads and parses a table. It takes the following named arguments:
 =item C<src>
 
 Mandatory. The source from which the table is to be read. May be either a file
-name, an array reference or a string containing newline characters.
+name, a file handle, an array reference or a string containing newline characters.
 
 =over
 
