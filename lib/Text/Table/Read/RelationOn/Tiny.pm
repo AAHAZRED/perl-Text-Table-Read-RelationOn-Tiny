@@ -359,12 +359,17 @@ sub get {
   my $src          = delete $args{src}          // croak("Invalid value argument for 'src'");
   croak(join(", ", sort(keys(%args))) . ": unexpected argument") if %args;
   my $inputArray;
-  if (ref($src)) {
-    croak("Invalid value argument for 'src'") if ref($src) ne 'ARRAY';
-    foreach my $e (@{$src}) {
-      croak("src: each entry must be a defined scalar") if (ref($e) || !defined($e));
+  if (my $ref_str = ref($src)) {
+    if ($ref_str eq 'ARRAY') {
+      foreach my $e (@{$src}) {
+        croak("src: each entry must be a defined scalar") if (ref($e) || !defined($e));
+      }
+      $inputArray = $src;
+    } elsif ($ref_str eq 'GLOB') {
+      $inputArray = [<$src>];
+    } else {
+      croak("Invalid value argument for 'src'");
     }
-    $inputArray = $src;
   } elsif ($src !~ /\n/) {
     open(my $h, '<', $src);
     $inputArray = [<$h>];
@@ -710,6 +715,11 @@ name, an array reference or a string containing newline characters.
 =item Argument is an array reference
 
 The method treats the array entries as the rows of the table.
+
+=item Argument is an open file handle (C<GLOB>)
+
+The method tries to read the table from that file handle.
+The handle is not closed.
 
 =item Argument is a string containing newlines
 

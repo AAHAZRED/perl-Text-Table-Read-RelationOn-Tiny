@@ -1,5 +1,8 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+vX.Y.Z     2025/mm/dd
+
+         - Method get() can also red from open handle (argument src).
 
 v2.3.3     2025/01/15
 
