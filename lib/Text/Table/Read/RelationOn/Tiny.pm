@@ -648,8 +648,10 @@ Method C<tab_elems> will return:
 
 And method C<eq_ids> will return:
 
+  {
    0 => [1, 2, 3],
    5 => [6]
+  }
 
 =item C<eqs>
 
