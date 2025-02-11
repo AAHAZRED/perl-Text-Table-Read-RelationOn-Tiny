@@ -41,7 +41,7 @@ v2.2.5     2023/04/30
 
 v2.2.4     2022/04/11
 
-         - Used croak() from Carp instead of die() and confess().
+         - Use croak() from Carp instead of die() and confess().
          - Corrected typo in POD. Some minor improvements in POD section.
 
 v2.2.3     2022/04/11
@@ -51,7 +51,7 @@ v2.2.3     2022/04/11
 v2.2.2     2022/04/11
 
          - Added subsection PITFALLS to POD.
-         - If pedantic is true, then first cheack indetation of a row.
+         - If pedantic is true, then first check indetation of a row.
          - Added tests.
 
 v2.2.1     2022/04/09
