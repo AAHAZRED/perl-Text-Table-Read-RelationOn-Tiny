@@ -6,7 +6,7 @@ v2.3.5     2025/02/09
 
 v2.3.4     2025/02/03
 
-         - Method get() can also red from open handle (argument src).
+         - Method get() can also read from open handle (argument src).
 
 v2.3.3     2025/01/15
 
