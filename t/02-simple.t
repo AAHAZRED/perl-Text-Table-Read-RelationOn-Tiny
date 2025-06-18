@@ -218,22 +218,22 @@ EOT
                     }
                    ];
     my $input_bak = $input;
-    subtest "src: a scalar (string)" => sub {
-      is_deeply([$obj->get(src => $input)],
-                $expected,
-                'Return values of get(STRING) in list context'
-               );
-      is($input, $input_bak, "Input string not changed");
-      is_deeply($obj->eq_ids,    {}, 'eq_ids()');
-    };
-    subtest "src: a scalar reference" => sub {
-      is_deeply([$obj->get(src => \$input)],
-                $expected,
-                'Return values of get(STRING) in list context'
-               );
-      is($input, $input_bak, "Input string not changed");
-      is_deeply($obj->eq_ids,    {}, 'eq_ids()');
-    };
+
+    note("src: a scalar (string)");
+    is_deeply([$obj->get(src => $input)],
+              $expected,
+              'Return values of get(STRING) in list context'
+             );
+    is($input, $input_bak, "Input string not changed");
+    is_deeply($obj->eq_ids,    {}, 'eq_ids()');
+
+    note("src: a scalar reference");
+    is_deeply([$obj->get(src => \$input)],
+              $expected,
+              'Return values of get(STRING) in list context'
+             );
+    is($input, $input_bak, "Input string not changed");
+    is_deeply($obj->eq_ids,    {}, 'eq_ids()');
 
     my @input_array = split(/\n/, $input);
     my @input_array_bak = @input_array;

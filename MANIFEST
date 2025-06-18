@@ -25,5 +25,4 @@ t/test-data/02-table-weird.txt
 t/test-data/02-table.txt
 
 xt/boilerplate.t
-xt/pod.t
 xt/pod-spell.t
