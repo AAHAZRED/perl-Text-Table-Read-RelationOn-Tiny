@@ -9,7 +9,7 @@ use Carp;
 
 # The following must be on the same line to ensure that $VERSION is read
 # correctly by PAUSE and installer tools. See docu of 'version'.
-use version 0.77; our $VERSION = version->declare("v2.3.5");
+use version 0.77; our $VERSION = version->declare("v2.3.6");
 
 
 sub new {
@@ -349,6 +349,18 @@ my $_parse_table = sub {
 };
 
 
+# just a function, not a method.
+sub _get_from_str {
+  if (${$_[0]} !~ /\n/) {
+    open(my $h, '<', ${$_[0]});
+    my $inputArray = [<$h>];
+    close($h);
+    return $inputArray;
+  } else {
+    return [split(/\n/, ${$_[0]})];
+  }
+}
+
 sub get {
   my $self = shift;
   croak("Odd number of arguments") if @_ % 2;
@@ -367,15 +379,14 @@ sub get {
       $inputArray = $src;
     } elsif ($ref_str eq 'GLOB') {
       $inputArray = [<$src>];
-    } else {
+    } elsif ($ref_str eq 'SCALAR') {
+      $inputArray = _get_from_str($src);
+    }
+    else {
       croak("Invalid value argument for 'src'");
     }
-  } elsif ($src !~ /\n/) {
-    open(my $h, '<', $src);
-    $inputArray = [<$h>];
-    close($h);
   } else {
-    $inputArray = [split(/\n/, $src)];
+    $inputArray = _get_from_str(\$src);
   }
   $self->$_reset() if !$self->{prespec};
   $self->$_parse_table($inputArray, $allow_subset, $pedantic);
@@ -710,7 +721,8 @@ The method reads and parses a table. It takes the following named arguments:
 =item C<src>
 
 Mandatory. The source from which the table is to be read. May be either a file
-name, a file handle, an array reference or a string containing newline characters.
+name, a file handle, an array reference or a string containing newline
+characters or a reference to a scalar (a string).
 
 =over
 
@@ -723,12 +735,12 @@ The method treats the array entries as the rows of the table.
 The method tries to read the table from that file handle.
 The handle is not closed.
 
-=item Argument is a string containing newlines
+=item Argument is a (reference to a) string containing newlines
 
 The method treats the argument as a string representation of the table and
-parses it.
+parses it. For larger strings, it makes sense to pass a reference to avoid unnecessary copying.
 
-=item Argument is a string B<not> containing newlines
+=item Argument is a  (reference to a) string B<not> containing newlines
 
 The method treats the argument as a file name and tries to read the table from
 that file.

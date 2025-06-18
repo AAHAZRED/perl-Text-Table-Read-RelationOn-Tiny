@@ -1,5 +1,10 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+v2.3.6     2025/06/18
+
+           - Argument src of method get() also accepts a scalar reference.
+           - Added META.json, CONTRIBUTING.md and SECURITY.md.
+
 v2.3.5     2025/02/09
 
          - Corrected POD.

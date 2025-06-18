@@ -170,7 +170,9 @@ EOT
     #Don't append a semicolon to the line above!
 
     is_deeply([$obj->get(src => $input)], [{0 => {0 => undef}}, [''], {'' => 0}],
-              "Result for one-element set with empty element namee");
+              "Result for one-element set with empty element name");
+    is_deeply([$obj->get(src => \$input)], [{0 => {0 => undef}}, [''], {'' => 0}],
+              "Result for one-element set with empty element name (scalar ref arg)");
   }
 }
 
@@ -216,12 +218,22 @@ EOT
                     }
                    ];
     my $input_bak = $input;
-    is_deeply([$obj->get(src => $input)],
-              $expected,
-              'Return values of get(STRING) in list context'
-             );
-    is($input, $input_bak, "Input string not changed");
-    is_deeply($obj->eq_ids,    {}, 'eq_ids()');
+    subtest "src: a scalar (string)" => sub {
+      is_deeply([$obj->get(src => $input)],
+                $expected,
+                'Return values of get(STRING) in list context'
+               );
+      is($input, $input_bak, "Input string not changed");
+      is_deeply($obj->eq_ids,    {}, 'eq_ids()');
+    };
+    subtest "src: a scalar reference" => sub {
+      is_deeply([$obj->get(src => \$input)],
+                $expected,
+                'Return values of get(STRING) in list context'
+               );
+      is($input, $input_bak, "Input string not changed");
+      is_deeply($obj->eq_ids,    {}, 'eq_ids()');
+    };
 
     my @input_array = split(/\n/, $input);
     my @input_array_bak = @input_array;
