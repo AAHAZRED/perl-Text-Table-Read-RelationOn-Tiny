@@ -22,6 +22,10 @@ my %WriteMakefileArgs = (
                 url  => 'https://github.com/AAHAZRED/perl-Text-Table-Read-RelationOn-Tiny.git',
                 web  => 'https://github.com/AAHAZRED/perl-Text-Table-Read-RelationOn-Tiny',
             },
+            bugtracker => {
+                web => 'https://github.com/AAHAZRED/perl-Text-Table-Read-RelationOn-Tiny/issues'
+            },
+
         },
         provides => { 'Text::Table::Read::RelationOn::Tiny'                   => {file => 'lib/Text/Table/Read/RelationOn/Tiny.pm'},
                       'Text::Table::Read::RelationOn::Tiny::_Relation_Matrix' => {file => 'lib/Text/Table/Read/RelationOn/Tiny.pm'},
