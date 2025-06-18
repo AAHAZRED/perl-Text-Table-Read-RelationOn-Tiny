@@ -9,7 +9,7 @@ use Carp;
 
 # The following must be on the same line to ensure that $VERSION is read
 # correctly by PAUSE and installer tools. See docu of 'version'.
-use version 0.77; our $VERSION = version->declare("v2.3.6");
+use version 0.77; our $VERSION = version->declare("v2.3.7");
 
 
 sub new {
@@ -477,7 +477,8 @@ sub matrix_named {
 
 
 {
-  package Text::Table::Read::RelationOn::Tiny::_Relation_Matrix;
+  package   # hide from pause
+    Text::Table::Read::RelationOn::Tiny::_Relation_Matrix;
 
   sub related { return exists($_[0]->{$_[1]}) && exists($_[0]->{$_[1]}->{$_[2]}); }
 }

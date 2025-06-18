@@ -1,5 +1,9 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+v2.3.7     2025/06/18
+
+           - Hide internal package from PAUSE.
+
 v2.3.6     2025/06/18
 
            - Argument src of method get() also accepts a scalar reference.

@@ -27,9 +27,9 @@ my %WriteMakefileArgs = (
             },
 
         },
-        provides => { 'Text::Table::Read::RelationOn::Tiny'                   => {file => 'lib/Text/Table/Read/RelationOn/Tiny.pm'},
-                      'Text::Table::Read::RelationOn::Tiny::_Relation_Matrix' => {file => 'lib/Text/Table/Read/RelationOn/Tiny.pm'},
-                    }
+        provides => { 'Text::Table::Read::RelationOn::Tiny' => {file => 'lib/Text/Table/Read/RelationOn/Tiny.pm'},
+                    },
+        no_index => {package => 'Text::Table::Read::RelationOn::Tiny::_Relation_Matrix'}
     },
     TEST_REQUIRES => {
         'Test::More' => '0',
