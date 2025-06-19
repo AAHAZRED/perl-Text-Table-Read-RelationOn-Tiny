@@ -6,7 +6,7 @@ use ExtUtils::MakeMaker;
 use File::Spec::Functions;
 use autodie;
 
-my $PM_File = "lib/Text/Table/Read/RelationOn/Tiny.pm";
+my $PM_File = catfile(qw(lib Text Table Read RelationOn Tiny.pm));
 
 open(my $h, '<', $PM_File);
 my $Version;

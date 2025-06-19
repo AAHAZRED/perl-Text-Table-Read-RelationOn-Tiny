@@ -6,7 +6,7 @@ If you discover a security vulnerability in this module, please do **not** open 
 
 Instead, report it privately by sending an email to:
 
-**451@gmx.eu**
+**451 at gmx.eu**
 
 Please include:
 
