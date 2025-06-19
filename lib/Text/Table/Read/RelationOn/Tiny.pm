@@ -517,7 +517,7 @@ Version #VERSION#
 This module implements a class that reads a binary I<relation on a set>
 (I<homogeneous relation>, see
 L<https://en.wikipedia.org/wiki/Binary_relation#Homogeneous_relation>) from a
-text table, which could be described as a "two-valued cross table" (in german
+text table, which could be described as a "two-valued cross table" (in German
 "Kreuzchentabelle").
 
 The table format must look like this:
