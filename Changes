@@ -1,5 +1,11 @@
 Revision history for Text-Table-Read-RelationOn-Tiny
 
+
+v3.0.0     2025/06/19
+
+           - Minor change in POD
+           - Increased major version to resolve pause/cpan indexing problem.
+
 v2.3.7     2025/06/18
 
            - Hide internal package from PAUSE.
